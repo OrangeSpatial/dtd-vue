@@ -51,7 +51,7 @@ function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
   }
 
   // same source should be a draggingCoverRect
-  if (targetNode.root === mouse?.value.dataTransfer?.root) {
+  if (targetNode.root === mouse.dataTransfer?.root) {
     updateDraggingCoverRectStyle(d_x, d_y)
   } else {
     resetDraggingCoverRectStyle()
@@ -67,7 +67,7 @@ function updateInsertionStyle(rect: DOMRect, x: number, y: number, vertical: boo
 }
 
 function updateDraggingCoverRectStyle(dx: number, dy: number) {
-  const dragRect = mouse?.value.dragElement?.getBoundingClientRect()
+  const dragRect = mouse.dragElement?.getBoundingClientRect()
   if (dragRect) {
     draggingCoverRectStyle.value = {
       transform: `perspective(1px) translate3d(${dx + dragRect.left}px,${dy + dragRect.top}px,0px)`,
@@ -109,13 +109,13 @@ function dragEndHandler() {
 }
 
 onMounted(() => {
-  mouse?.value.on(DragEventType.Dragging, draggingHandler)
-  mouse?.value.on(DragEventType.DragEnd, dragEndHandler)
+  mouse.on(DragEventType.Dragging, draggingHandler)
+  mouse.on(DragEventType.DragEnd, dragEndHandler)
 })
 
 onBeforeUnmount(() => {
-  mouse?.value.off(DragEventType.Dragging, draggingHandler)
-  mouse?.value.off(DragEventType.DragEnd, dragEndHandler)
+  mouse.off(DragEventType.Dragging, draggingHandler)
+  mouse.off(DragEventType.DragEnd, dragEndHandler)
 })
 </script>
 

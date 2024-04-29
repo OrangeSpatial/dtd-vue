@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import DtdContainer from '@/components/DtdContainer.vue'
+import DtdData from '@/components/DtdData.vue'
 
 const data = ref([
     {
@@ -34,30 +36,24 @@ const data1 = ref([
 </script>
 
 <template>
-    <div class="container">
-        <div class="left">
-        <DragToDrop v-model="data">
-            <template #default="{ item }">
-                <div class="wwww">{{ item.props?.name }}</div>
-            </template>
-            <template #ghost="{ item }">
-                <div class="ghost-custom">{{ item?.name }}</div>
-            </template>
-        </DragToDrop>
-    </div>
-
-    <div class="right">
-        <DragToDrop v-model="data1">
-            <template #default="{ item }">
-                <div class="wwww">{{ item.props?.name }}</div>
-            </template>
-            <template #ghost="{ item }">
-                <div class="ghost-custom">{{ item?.name }}</div>
-            </template>
-        </DragToDrop>
-    </div>
-    </div>
-
+    <dtd-container>
+        <div class="container">
+            <div class="left">
+                <dtd-data v-model="data">
+                    <template #default="{ item }">
+                        <div>{{ item.props?.name }}</div>
+                    </template>
+                </dtd-data>
+            </div>
+            <div class="right">
+                <dtd-data v-model="data1">
+                    <template #default="{ item }">
+                        <div>{{ item.props?.name }}</div>
+                    </template>
+                </dtd-data>
+            </div>
+        </div>
+    </dtd-container>
     <h1>渲染数据：</h1>
     <div class="container">
         <div class="left">

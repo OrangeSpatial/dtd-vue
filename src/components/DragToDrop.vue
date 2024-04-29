@@ -34,12 +34,12 @@ const dtdData = computed({
 
 const { mouse } = useCursor(dtdData.value)
 provide(DTD_MOUSE, mouse)
-mouse.value.on(DragEventType.DragEnd, dragEndHandler)
+mouse.on(DragEventType.DragEnd, dragEndHandler)
 function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {
-  const sourceNode = mouse.value.dataTransfer
+  const sourceNode = mouse.dataTransfer
   const positionObj = getCursorPositionInDtdNode(e)
   carryNode.value = undefined
-  if (!targetNode || !sourceNode || !positionObj || !mouse.value.dragElement) return
+  if (!targetNode || !sourceNode || !positionObj || !mouse.dragElement) return
   const dragType = sourceNode.dragType
   const isContainerEdge = cursorAtContainerEdge(positionObj.rect, e)
   const isVertical = getLayoutNodeInContainer(positionObj.targetEl) === NodeLayout.VERTICAL
@@ -54,16 +54,16 @@ function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {
 
 const carryNode = ref<DtdNode>()
 
-mouse.value.on(DragEventType.DragStart, () => {
-  carryNode.value = mouse.value.dataTransfer as DtdNode
+mouse.on(DragEventType.DragStart, () => {
+  carryNode.value = mouse.dataTransfer as DtdNode
 })
 
 function ghostMounted(el: HTMLElement) {
-  mouse.value.setGhostElement(el)
+  mouse.setGhostElement(el)
 }
 
 onBeforeUnmount(() => {
-  mouse.value.off(DragEventType.DragEnd, dragEndHandler)
+  mouse.off(DragEventType.DragEnd, dragEndHandler)
 })
 
 function init() {
