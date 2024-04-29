@@ -77,7 +77,7 @@ export class Mouse {
 
   dragElement: HTMLElement | null = null
 
-  ghostElement: HTMLElement
+  ghostElement: HTMLElement | null = null
 
   dataTransfer: DtdNode[] = []
 
@@ -89,21 +89,13 @@ export class Mouse {
   node: DtdNode | null = null
 
   constructor() {
-    // 设置默认拖拽元素
-    const ghostElement = document.createElement('div');
-    ghostElement.style.position = 'absolute';
-    ghostElement.style.zIndex = '9999';
-    ghostElement.style.pointerEvents = 'none';
-    this.ghostElement = ghostElement;
-    document.body.appendChild(ghostElement);
   }
 
   public setNode(node: DtdNode): void {
     this.node = node;
   }
 
-  public setGhostElement(ghostElement: HTMLElement): void {
-    if (!ghostElement) return;
+  public setGhostElement(ghostElement: HTMLElement | null): void {
     this.ghostElement && this.ghostElement.remove();
     this.ghostElement = ghostElement;
   }
@@ -225,7 +217,7 @@ export class Mouse {
     }
 
     if (this.ghostElement) {
-      removeGhostElStyle(this.ghostElement);
+        removeGhostElStyle(this.ghostElement);
     }
   }
 

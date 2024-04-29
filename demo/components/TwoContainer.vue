@@ -52,7 +52,7 @@ const data1 = ref([
             </div>
         </div>
     </dtd-pod>
-    <h1>渲染数据：</h1>
+    <div class="title">渲染数据：</div>
     <div class="container">
         <div class="left">
             <div class="code">
@@ -66,43 +66,3 @@ const data1 = ref([
         </div>
     </div>
 </template>
-
-<style lang="scss" scoped>
-.container {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 20px;
-
-    .left, .right {
-        flex: 1;
-    }
-}
-.ghost-custom {
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    padding: 5px;
-    border-radius: 5px;
-}
-
-:deep(.node-class) {
-    background-color: #f0f0f0;
-    padding: 10px;
-    border: 1px solid #0ac385;
-}
-
-.dtd-root {
-    background-color: #ececec;
-    padding: 4px;
-}
-
-.dtd-item {
-    padding: 10px;
-    background-color: white;
-}
-
-.code {
-    background-color: #f0f0f0;
-    padding: 10px;
-}
-</style>
