@@ -2,15 +2,14 @@
 import { DtdNode, NodeLayout, insertNode, insertNodeInContainer } from '../model/DtdNode.ts'
 import { useCursor } from '../hooks/cursorHook.ts'
 import DtdAuxTool from './DtdAuxTool.vue'
-import Dtd from './Dtd.vue'
 import DtdGhost from './DtdGhost.vue'
-import { computed, onBeforeUnmount, ref, provide } from 'vue';
-import { DragEventType } from '../model/Mouse';
+import { onBeforeUnmount, ref, provide } from 'vue';
+import { DragEventType } from '../model/Mouse.ts';
 import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts';
 import { DTD_MOUSE } from '../common/injectSymbol.ts'
 
 defineOptions({
-    name: 'DtdContainer',
+    name: 'DtdPod',
 })
 
 const { mouse } = useCursor()
@@ -46,13 +45,6 @@ onBeforeUnmount(() => {
     mouse.off(DragEventType.DragEnd, dragEndHandler)
 })
 
-// function init() {
-//     if (!props.nodeKey && !props.modelValue?.[0].id) {
-//         console.error('DragToDrop: key is required')
-//     }
-// }
-
-// init()
 </script>
 
 <template>

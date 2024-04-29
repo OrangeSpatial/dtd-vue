@@ -34,14 +34,18 @@ const data = ref([
 
 <template>
   <div style="padding: 24px;">
-    <DragToDrop v-model="data">
-    <template #default="{ item }">
-      <div>{{ item.props?.name }}</div>
-    </template>
-    <template #ghost="{ item }">
-      <div class="ghost-custom">{{ item?.name }}</div>
-    </template>
-  </DragToDrop>
+    <dtd-pod>
+        <div class="container">
+          <DragToDrop nodeClass="node-class" class="dtd-root" v-model="data">
+              <template #default="{ item }">
+                  <div class="dtd-item">{{ item.props?.name }}</div>
+              </template>
+          </DragToDrop>
+        </div>
+      <template #ghost="{ item }">
+        <div class="ghost-custom">{{ item?.name }}</div>
+      </template>
+    </dtd-pod>
   </div>
   
   <h1>渲染数据：</h1>
@@ -51,10 +55,21 @@ const data = ref([
 </template>
 
 <style scoped>
-.title {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 20px;
+
+:deep(.node-class) {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border: 1px solid #0ac385;
+}
+
+.dtd-root {
+    background-color: #ececec;
+    padding: 4px;
+}
+
+.dtd-item {
+    padding: 10px;
+    background-color: white;
 }
 .ghost-custom {
   background-color: #f0f0f0;

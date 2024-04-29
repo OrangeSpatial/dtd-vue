@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCursor } from '../hooks/cursorHook.ts'
-import { CSSProperties, Ref, inject, onBeforeUnmount, onMounted, ref } from 'vue'
+import { CSSProperties, inject, onBeforeUnmount, onMounted, ref } from 'vue'
 import { DragEventType, Mouse } from '../model/Mouse.ts'
 import { DtdNode, NodeLayout } from '../model/DtdNode.ts'
 import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts'
@@ -19,7 +19,10 @@ const draggingCoverRectStyle = ref<CSSProperties>(initStyle)
 
 const droppingCoverRectStyle = ref<CSSProperties>(initStyle)
 
-const mouse = inject<Ref<Mouse>>(DTD_MOUSE)
+const mouse = inject<Mouse>(DTD_MOUSE)
+if (!mouse) {
+  throw new Error('DtdAuxTool: mouse is required')
+}
 const currentTargetNode = ref<DtdNode>()
 
 function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
@@ -34,7 +37,6 @@ function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
   currentTargetNode.value = targetNode
   const { isTop, isLeft, rect } = positionObj
   const isVertical = getLayoutNodeInContainer(positionObj.targetEl) === NodeLayout.VERTICAL
-  // TODO: 根据布局判断，默认垂直布局
   const d_x = e.pageX - e.clientX
   const d_y = e.pageY - e.clientY
   const left = d_x + rect.left

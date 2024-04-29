@@ -50,7 +50,7 @@ export function removeGhostElStyle(el: HTMLElement) {
 }
 
 export function getLayoutNodeInContainer(container: HTMLElement) {
-  const nodeParentELStyle = getComputedStyle(container)
+  const nodeParentELStyle = getComputedStyle(container.parentElement!)
     // support for flex and grid layout
     if (nodeParentELStyle.display === 'flex' && nodeParentELStyle.flexDirection === 'row') {
       return NodeLayout.HORIZONTAL

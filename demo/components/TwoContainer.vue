@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import DtdContainer from '@/components/DtdContainer.vue'
-import DtdData from '@/components/DtdData.vue'
 
 const data = ref([
     {
@@ -36,24 +34,24 @@ const data1 = ref([
 </script>
 
 <template>
-    <dtd-container>
+    <dtd-pod>
         <div class="container">
             <div class="left">
-                <dtd-data v-model="data">
+                <DragToDrop nodeClass="node-class" class="dtd-root" v-model="data">
                     <template #default="{ item }">
-                        <div>{{ item.props?.name }}</div>
+                        <div class="dtd-item">{{ item.props?.name }}</div>
                     </template>
-                </dtd-data>
+                </DragToDrop>
             </div>
             <div class="right">
-                <dtd-data v-model="data1">
+                <DragToDrop nodeClass="node-class" class="dtd-root" v-model="data1">
                     <template #default="{ item }">
-                        <div>{{ item.props?.name }}</div>
+                        <div class="dtd-item">{{ item.props?.name }}</div>
                     </template>
-                </dtd-data>
+                </DragToDrop>
             </div>
         </div>
-    </dtd-container>
+    </dtd-pod>
     <h1>渲染数据：</h1>
     <div class="container">
         <div class="left">
@@ -85,6 +83,22 @@ const data1 = ref([
     border: 1px solid #ccc;
     padding: 5px;
     border-radius: 5px;
+}
+
+:deep(.node-class) {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border: 1px solid #0ac385;
+}
+
+.dtd-root {
+    background-color: #ececec;
+    padding: 4px;
+}
+
+.dtd-item {
+    padding: 10px;
+    background-color: white;
 }
 
 .code {

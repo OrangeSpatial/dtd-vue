@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed } from "@vue/reactivity";
 import { DtdNode } from "../model/DtdNode";
 import DtdItem from "./DtdItem.vue";
 
 defineOptions({
-  name: "DtD",
+  name: "DtdRecursion",
 });
 
 const props = withDefaults(
@@ -30,10 +29,10 @@ const itemKey = (item: DtdNode) => {
     :disabled="n.disabled"
   >
     <slot :item="n"></slot>
-    <DtD :nodeClass v-if="n.children?.length" :node="n">
+    <DtdRecursion :nodeClass v-if="n.children?.length" :node="n">
       <template #default="{ item: cItem }">
         <slot :item="cItem"></slot>
       </template>
-    </DtD>
+    </DtdRecursion>
   </dtd-item>
 </template>

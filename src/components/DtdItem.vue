@@ -14,7 +14,6 @@ const customProps = computed( () => {
 <template>
   <div
     v-bind="customProps"
-    class="drag-to-drop-item"
     :class="{
       'drag-disabled': disabled
     }"
