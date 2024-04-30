@@ -16,20 +16,14 @@ const { mouse } = useCursor()
 provide(DTD_MOUSE, mouse)
 mouse.on(DragEventType.DragEnd, dragEndHandler)
 function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {
-    console.log('dragEndHandler', 1);
-    
     const sourceNode = mouse.dataTransfer
     const positionObj = getCursorPositionInDtdNode(e)
-<<<<<<< HEAD
     carryNode.value = []
     if (!targetNode || !sourceNode.length || !positionObj || !mouse.dragElement) return
+    const parentNode = sourceNode.find(node => node.isParentOf(targetNode))
+    if (parentNode) return
+    // if (targetNode.dragId === sourceNode[0].dragId) return
     const dragType = sourceNode[0].dragType
-=======
-    carryNode.value = undefined
-    if (!targetNode || !sourceNode || !positionObj || !mouse.dragElement) return
-    if (targetNode.dragId === sourceNode.dragId) return
-    const dragType = sourceNode.dragType
->>>>>>> b4d43bb (fix： 修复同一容器内拖入消失的问题)
     const isContainerEdge = cursorAtContainerEdge(positionObj.rect, e)
     const isVertical = getLayoutNodeInContainer(positionObj.targetEl) === NodeLayout.VERTICAL
     const insertBefore = isVertical ? positionObj.insertBefore : positionObj.isLeft

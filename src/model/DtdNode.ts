@@ -85,6 +85,11 @@ export class DtdNode {
   static clearCacheAll() {
     TreeNodes.clear();
   }
+
+  // 判断节点是否是自己或者父节点
+  isParentOf(node: DtdNode): boolean {
+    return node == this || node.parent && this.isParentOf(node.parent);
+  }
 }
 
 

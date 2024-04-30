@@ -36,8 +36,8 @@ function selectNode(e: Event, node: DtdNode) {
   >
     <slot :item="n"></slot>
     <DtdRecursion :nodeClass v-if="n.children?.length" :node="n">
-      <template #default="{ item: cItem }">
-        <slot :item="cItem"></slot>
+      <template #default="{ item }">
+        <slot :item="item"></slot>
       </template>
     </DtdRecursion>
   </dtd-item>

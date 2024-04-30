@@ -33,6 +33,9 @@ function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
     resetDroppingCoverRectStyle()
     return
   }
+  const sourceNode = mouse?.dataTransfer
+  if (!sourceNode?.length) return
+  const parentNode = sourceNode.find(node => node.isParentOf(targetNode))
   currentTargetNode.value = targetNode
   const { isTop, isLeft, rect } = positionObj
   const isVertical = getLayoutNodeInContainer(positionObj.targetEl) === NodeLayout.VERTICAL
@@ -46,7 +49,7 @@ function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
     // 在可放置的容器内
     resetInsertionStyle()
     updateDroppingCoverRectStyle(rect, left, top)
-  } else {
+  } else if (!parentNode) {
     updateInsertionStyle(rect, x, y, isVertical)
     resetDroppingCoverRectStyle()
   }

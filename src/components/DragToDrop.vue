@@ -29,6 +29,9 @@ const dtdData = computed({
 
 const mouse = inject<Mouse>(DTD_MOUSE)
 mouse?.on(DragEventType.DragEnd, (e: MouseEvent, targetNode?: DtdNode) => {
+  if(!targetNode || !mouse.dataTransfer.length) return
+  const parentNode = mouse.dataTransfer.find(node => node.isParentOf(targetNode))
+  if (parentNode) return
   // 删除上次缓存
   DtdNode.deleteCache(dtdData.value)
   // 更新
