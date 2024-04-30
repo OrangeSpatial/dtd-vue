@@ -34,31 +34,25 @@ const data1 = ref([
 </script>
 
 <template>
-    <div class="container">
-        <div class="left">
-        <DragToDrop v-model="data">
-            <template #default="{ item }">
-                <div class="wwww">{{ item.props?.name }}</div>
-            </template>
-            <template #ghost="{ item }">
-                <div class="ghost-custom">{{ item?.name }}</div>
-            </template>
-        </DragToDrop>
-    </div>
-
-    <div class="right">
-        <DragToDrop v-model="data1">
-            <template #default="{ item }">
-                <div class="wwww">{{ item.props?.name }}</div>
-            </template>
-            <template #ghost="{ item }">
-                <div class="ghost-custom">{{ item?.name }}</div>
-            </template>
-        </DragToDrop>
-    </div>
-    </div>
-
-    <h1>渲染数据：</h1>
+    <dtd-pod>
+        <div class="container">
+            <div class="left">
+                <DragToDrop nodeClass="node-class" class="dtd-root" v-model="data">
+                    <template #default="{ item }">
+                        <div class="dtd-item">{{ item.props?.name }}</div>
+                    </template>
+                </DragToDrop>
+            </div>
+            <div class="right">
+                <DragToDrop nodeClass="node-class" class="dtd-root" v-model="data1">
+                    <template #default="{ item }">
+                        <div class="dtd-item">{{ item.props?.name }}</div>
+                    </template>
+                </DragToDrop>
+            </div>
+        </div>
+    </dtd-pod>
+    <div class="title">渲染数据：</div>
     <div class="container">
         <div class="left">
             <div class="code">
@@ -72,27 +66,3 @@ const data1 = ref([
         </div>
     </div>
 </template>
-
-<style lang="scss" scoped>
-.container {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 20px;
-
-    .left, .right {
-        flex: 1;
-    }
-}
-.ghost-custom {
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    padding: 5px;
-    border-radius: 5px;
-}
-
-.code {
-    background-color: #f0f0f0;
-    padding: 10px;
-}
-</style>

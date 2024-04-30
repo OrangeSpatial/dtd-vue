@@ -906,10 +906,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^9.4.1":
-  version: 9.5.0
-  resolution: "commander@npm:9.5.0"
-  checksum: 10c0/5f7784fbda2aaec39e89eb46f06a999e00224b3763dc65976e05929ec486e174fe9aac2655f03ba6a5e83875bd173be5283dc19309b7c65954701c02025b3c1d
+"commander@npm:^10.0.0":
+  version: 10.0.1
+  resolution: "commander@npm:10.0.1"
+  checksum: 10c0/53f33d8927758a911094adadda4b2cbac111a5b377d8706700587650fd8f45b0bbe336de4b5c3fe47fd61f420a3d9bd452b6e0e6e5600a7e74d7bf0174f6efe3
   languageName: node
   linkType: hard
 
@@ -1485,9 +1485,9 @@ __metadata:
   linkType: hard
 
 "lru-cache@npm:^10.0.1, lru-cache@npm:^10.2.0":
-  version: 10.2.1
-  resolution: "lru-cache@npm:10.2.1"
-  checksum: 10c0/e5b4aa7c60e154d27b8ff3e375f8c8cba6be5e94d4048d757588dc371941c15c11ab859d3a402dab33d338d082be9af569761af27a6bc0a9d91376900abb690e
+  version: 10.2.2
+  resolution: "lru-cache@npm:10.2.2"
+  checksum: 10c0/402d31094335851220d0b00985084288136136992979d0e015f0f1697e15d1c86052d7d53ae86b614e5b058425606efffc6969a31a091085d7a2b80a8a1e26d6
   languageName: node
   linkType: hard
 
@@ -2410,10 +2410,10 @@ __metadata:
   linkType: hard
 
 "z-schema@npm:~5.0.2":
-  version: 5.0.5
-  resolution: "z-schema@npm:5.0.5"
+  version: 5.0.6
+  resolution: "z-schema@npm:5.0.6"
   dependencies:
-    commander: "npm:^9.4.1"
+    commander: "npm:^10.0.0"
     lodash.get: "npm:^4.4.2"
     lodash.isequal: "npm:^4.5.0"
     validator: "npm:^13.7.0"
@@ -2422,6 +2422,6 @@ __metadata:
       optional: true
   bin:
     z-schema: bin/z-schema
-  checksum: 10c0/e4c812cfe6468c19b2a21d07d4ff8fb70359062d33400b45f89017eaa3efe9d51e85963f2b115eaaa99a16b451782249bf9b1fa8b31d35cc473e7becb3e44264
+  checksum: 10c0/3242da6b2d8da3bc9a66876ef01a1d5f0d0ad7bd70b0e3e24f5dc6ef5f6213e6e660f14f3dceee9b000692a47b86b365c0ea43b5340153efcb2808ccbfb3fc6f
   languageName: node
   linkType: hard

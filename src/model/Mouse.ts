@@ -77,9 +77,9 @@ export class Mouse {
 
   dragElement: HTMLElement | null = null
 
-  ghostElement: HTMLElement
+  ghostElement: HTMLElement | null = null
 
-  dataTransfer: DtdNode | null = null
+  dataTransfer: DtdNode[] = []
 
   startEvent: MouseEvent = new MouseEvent('')
   startTime: number = 0
@@ -89,21 +89,13 @@ export class Mouse {
   node: DtdNode | null = null
 
   constructor() {
-    // 设置默认拖拽元素
-    const ghostElement = document.createElement('div');
-    ghostElement.style.position = 'absolute';
-    ghostElement.style.zIndex = '9999';
-    ghostElement.style.pointerEvents = 'none';
-    this.ghostElement = ghostElement;
-    document.body.appendChild(ghostElement);
   }
 
   public setNode(node: DtdNode): void {
     this.node = node;
   }
 
-  public setGhostElement(ghostElement: HTMLElement): void {
-    if (!ghostElement) return;
+  public setGhostElement(ghostElement: HTMLElement | null): void {
     this.ghostElement && this.ghostElement.remove();
     this.ghostElement = ghostElement;
   }
@@ -177,7 +169,7 @@ export class Mouse {
       // 正在拖拽的node
       const node = getNode(dragId);
       if (node) {
-        this.dataTransfer = node;
+        if(!this.dataTransfer.includes(node)) this.dataTransfer = [node];
         this.dragPositionChangeCallbacks.get(DragEventType.DragStart)?.forEach((cb) => {
           cb(e, node);
         });
@@ -224,11 +216,8 @@ export class Mouse {
       this.dragElement = null;
     }
 
-    if (this.dataTransfer) {
-      this.dataTransfer = null;
-    }
     if (this.ghostElement) {
-      removeGhostElStyle(this.ghostElement);
+        removeGhostElStyle(this.ghostElement);
     }
   }
 

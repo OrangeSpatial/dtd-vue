@@ -57,9 +57,10 @@ export class DtdNode {
       if (node.droppable) this.droppable = node.droppable;
       if (node.dragType && Object.values(DragNodeType).includes(node.dragType)) this.dragType = node.dragType;
       else this.dragType = DragNodeType.MOVE;
-      this.children = (node?.children || []).map((child) => new DtdNode(child, this));
-    }
+        this.children = (node?.children || []).map((child) => new DtdNode(child, this));
+      }
     TreeNodes.set(this.dragId, this);
+    console.log(this.dragId, TreeNodes.size, TreeNodes.get(this.dragId)?.props?.name);
   }
 
   static fromList(list: IDtdNode[]) {
@@ -75,10 +76,29 @@ export class DtdNode {
       };
     });
   }
+
+  static deleteCache(root: DtdNode) {
+    TreeNodes.delete(root.dragId);
+    root.children.forEach((child) => DtdNode.deleteCache(child));
+  }
+
+  static clearCacheAll() {
+    TreeNodes.clear();
+  }
+
+  // 判断节点是否是自己或者父节点
+  isParentOf(node: DtdNode): boolean {
+    return node == this || node.parent && this.isParentOf(node.parent);
+  }
 }
 
 
-export function deleteNode(node: DtdNode) {
+export function deleteNode(node: DtdNode | DtdNode[]) {
+  if (!node) return;
+  if (Array.isArray(node)) {
+    node.forEach((n) => deleteNode(n));
+    return;
+  }
   const parent = node.parent || node;
   parent.children = parent.children.filter((child) => child !== node);
   TreeNodes.delete(node.dragId);
@@ -91,13 +111,13 @@ export function deleteNode(node: DtdNode) {
  * @param insertBefore
  * @param type
  */
-export function insertNode(targetNode: DtdNode, sourceNode: DtdNode, insertBefore: boolean, type: DragNodeType) {
+export function insertNode(targetNode: DtdNode, sourceNode: DtdNode[], insertBefore: boolean, type: DragNodeType) {
   if (!targetNode || !sourceNode) return;
   const parent = targetNode.parent || targetNode;
   parent.children.splice(
     parent.children.indexOf(targetNode) + (insertBefore ? 0 : 1),
     0,
-    new DtdNode({...sourceNode, dragId: ''}, parent)
+    ...sourceNode.map(node => new DtdNode({...node, dragId: ''}, parent))
   );
 
   if (type === DragNodeType.MOVE) {
@@ -114,10 +134,10 @@ export function insertNode(targetNode: DtdNode, sourceNode: DtdNode, insertBefor
  * @param type 
  * @returns 
  */
-export function insertNodeInContainer(targetNode: DtdNode, sourceNode: DtdNode, insertBefore: boolean, type: DragNodeType) {
+export function insertNodeInContainer(targetNode: DtdNode, sourceNode: DtdNode[], insertBefore: boolean, type: DragNodeType) {
   if (!targetNode || !sourceNode) return;
-  const newNode = new DtdNode({...sourceNode, dragId: ''}, targetNode)
-  insertBefore ? targetNode.children.unshift(newNode) : targetNode.children.push(newNode);
+  const newNodes = sourceNode.map(node => new DtdNode({...node, dragId: ''}, targetNode))
+  insertBefore ? targetNode.children.unshift(...newNodes) : targetNode.children.push(...newNodes);
   if (type === DragNodeType.MOVE) {
     // 删除原节点
     deleteNode(sourceNode);

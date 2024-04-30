@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { DtdNode, NodeLayout, insertNode, insertNodeInContainer } from '../model/DtdNode.ts'
-import { useCursor } from '../hooks/cursorHook.ts'
-import DtdAuxTool from './DtdAuxTool.vue'
-import Dtd from './Dtd.vue'
-import DtdGhost from './DtdGhost.vue'
-import { computed, onBeforeUnmount, ref, provide } from 'vue';
-import { DragEventType } from '../model/Mouse';
-import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts';
-import { DTD_MOUSE } from '../common/injectSymbol.ts'
+import { computed, inject, onBeforeUnmount } from 'vue'
+import DtdRecursion from './DtdRecursion.vue'
+import DtdItem from './DtdItem.vue'
+import { DtdNode } from '../model/DtdNode'
+import { DTD_MOUSE } from '../common/injectSymbol'
+import { DragEventType, Mouse } from '../model/Mouse'
 
 defineOptions({
   name: 'DragToDrop',
@@ -24,73 +21,52 @@ const emits = defineEmits<{
   (event: 'update:modelValue', value: Array<any>): void
 }>()
 const dtdData = computed({
-  get: () => {
-    return DtdNode.fromList(props.modelValue || [])
-  },
+  get: () => DtdNode.fromList(props.modelValue || []),
   set: (value: DtdNode) => {
     emits('update:modelValue', DtdNode.toList(value))
   }
 })
 
-const { mouse } = useCursor(dtdData.value)
-provide(DTD_MOUSE, mouse)
-mouse.value.on(DragEventType.DragEnd, dragEndHandler)
-function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {
-  const sourceNode = mouse.value.dataTransfer
-  const positionObj = getCursorPositionInDtdNode(e)
-  carryNode.value = undefined
-  if (!targetNode || !sourceNode || !positionObj || !mouse.value.dragElement) return
-  const dragType = sourceNode.dragType
-  const isContainerEdge = cursorAtContainerEdge(positionObj.rect, e)
-  const isVertical = getLayoutNodeInContainer(positionObj.targetEl) === NodeLayout.VERTICAL
-  const insertBefore = isVertical ? positionObj.insertBefore : positionObj.isLeft
-  if (targetNode?.droppable && !isContainerEdge) {
-    insertNodeInContainer(targetNode, sourceNode, insertBefore, dragType)
-  } else {
-    insertNode(targetNode, sourceNode, isVertical ? positionObj.isTop : positionObj.isLeft, dragType)
-  }
-  dtdData.value = targetNode.root
-}
-
-const carryNode = ref<DtdNode>()
-
-mouse.value.on(DragEventType.DragStart, () => {
-  carryNode.value = mouse.value.dataTransfer as DtdNode
+const mouse = inject<Mouse>(DTD_MOUSE)
+mouse?.on(DragEventType.DragEnd, (e: MouseEvent, targetNode?: DtdNode) => {
+  if(!targetNode || !mouse.dataTransfer.length) return
+  const parentNode = mouse.dataTransfer.find(node => node.isParentOf(targetNode))
+  if (parentNode) return
+  // 删除上次缓存
+  DtdNode.deleteCache(dtdData.value)
+  // 更新
+  dtdData.value = dtdData.value
 })
 
-function ghostMounted(el: HTMLElement) {
-  mouse.value.setGhostElement(el)
-}
-
 onBeforeUnmount(() => {
-  mouse.value.off(DragEventType.DragEnd, dragEndHandler)
+  DtdNode.clearCacheAll()
 })
 
 function init() {
-  if(!props.nodeKey && !props.modelValue?.[0].id) {
-    console.error('DragToDrop: key is required')
-  }
+    if (!props.nodeKey && !props.modelValue?.[0].id) {
+        console.error('DragToDrop: key is required')
+    }
+    if (!mouse) {
+        throw new Error('DragToDrop: mouse is required')
+    }
 }
 
 init()
 </script>
 
 <template>
-  <Dtd :nodeKey="nodeKey" :nodeClass :node="dtdData">
-    <template #default="{ item }">
-      <slot :item="item" />
-    </template>
-  </Dtd>
-  <dtd-aux-tool />
-  <dtd-ghost @mounted="ghostMounted">
-    <slot name="ghost" v-if="carryNode" :item="carryNode?.props"/>
-  </dtd-ghost>
+  <dtd-item :data="dtdData" :disabled="dtdData.disabled" :class="!dtdData?.children?.length ? 'full' : ''">
+    <DtdRecursion :nodeKey="nodeKey" :nodeClass :node="dtdData">
+      <template #default="{ item }">
+        <slot :item="item" />
+      </template>
+    </DtdRecursion>
+  </dtd-item>
 </template>
 
 <style scoped>
-.drag-to-drop {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.full {
+  height: 100%;
+  width: 100%;
 }
 </style>

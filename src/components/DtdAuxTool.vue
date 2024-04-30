@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { useCursor } from '../hooks/cursorHook.ts'
-import { CSSProperties, Ref, inject, onBeforeUnmount, onMounted, ref } from 'vue'
+import { CSSProperties, inject, onBeforeUnmount, onMounted, ref } from 'vue'
 import { DragEventType, Mouse } from '../model/Mouse.ts'
 import { DtdNode, NodeLayout } from '../model/DtdNode.ts'
 import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts'
@@ -19,7 +18,10 @@ const draggingCoverRectStyle = ref<CSSProperties>(initStyle)
 
 const droppingCoverRectStyle = ref<CSSProperties>(initStyle)
 
-const mouse = inject<Ref<Mouse>>(DTD_MOUSE)
+const mouse = inject<Mouse>(DTD_MOUSE)
+if (!mouse) {
+  throw new Error('DtdAuxTool: mouse is required')
+}
 const currentTargetNode = ref<DtdNode>()
 
 function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
@@ -31,10 +33,12 @@ function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
     resetDroppingCoverRectStyle()
     return
   }
+  const sourceNode = mouse?.dataTransfer
+  if (!sourceNode?.length) return
+  const parentNode = sourceNode.find(node => node.isParentOf(targetNode))
   currentTargetNode.value = targetNode
   const { isTop, isLeft, rect } = positionObj
   const isVertical = getLayoutNodeInContainer(positionObj.targetEl) === NodeLayout.VERTICAL
-  // TODO: 根据布局判断，默认垂直布局
   const d_x = e.pageX - e.clientX
   const d_y = e.pageY - e.clientY
   const left = d_x + rect.left
@@ -45,13 +49,13 @@ function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
     // 在可放置的容器内
     resetInsertionStyle()
     updateDroppingCoverRectStyle(rect, left, top)
-  } else {
+  } else if (!parentNode) {
     updateInsertionStyle(rect, x, y, isVertical)
     resetDroppingCoverRectStyle()
   }
 
   // same source should be a draggingCoverRect
-  if (targetNode.root === mouse?.value.dataTransfer?.root) {
+  if (targetNode.root === mouse?.dataTransfer?.[0]?.root) {
     updateDraggingCoverRectStyle(d_x, d_y)
   } else {
     resetDraggingCoverRectStyle()
@@ -67,7 +71,7 @@ function updateInsertionStyle(rect: DOMRect, x: number, y: number, vertical: boo
 }
 
 function updateDraggingCoverRectStyle(dx: number, dy: number) {
-  const dragRect = mouse?.value.dragElement?.getBoundingClientRect()
+  const dragRect = mouse?.dragElement?.getBoundingClientRect()
   if (dragRect) {
     draggingCoverRectStyle.value = {
       transform: `perspective(1px) translate3d(${dx + dragRect.left}px,${dy + dragRect.top}px,0px)`,
@@ -109,13 +113,13 @@ function dragEndHandler() {
 }
 
 onMounted(() => {
-  mouse?.value.on(DragEventType.Dragging, draggingHandler)
-  mouse?.value.on(DragEventType.DragEnd, dragEndHandler)
+  mouse.on(DragEventType.Dragging, draggingHandler)
+  mouse.on(DragEventType.DragEnd, dragEndHandler)
 })
 
 onBeforeUnmount(() => {
-  mouse?.value.off(DragEventType.Dragging, draggingHandler)
-  mouse?.value.off(DragEventType.DragEnd, dragEndHandler)
+  mouse.off(DragEventType.Dragging, draggingHandler)
+  mouse.off(DragEventType.DragEnd, dragEndHandler)
 })
 </script>
 
@@ -126,7 +130,7 @@ onBeforeUnmount(() => {
     ></div>
     <div class="dtd-aux-dashed-box"></div>
     <div class="dtd-aux-selection-box"></div>
-    <div v-if="mouse?.dataTransfer" class="dtd-aux-cover-rect dragging" :style="draggingCoverRectStyle"></div>
+    <div v-if="mouse?.dataTransfer.length" class="dtd-aux-cover-rect dragging" :style="draggingCoverRectStyle"></div>
     <div v-if="currentTargetNode?.droppable" class="dtd-aux-cover-rect dropping" :style="droppingCoverRectStyle"></div>
   </div>
 </template>

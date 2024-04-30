@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed } from "@vue/reactivity";
 import { DtdNode } from "../model/DtdNode";
 import DtdItem from "./DtdItem.vue";
 
 defineOptions({
-  name: "DtD",
+  name: "DtdRecursion",
 });
 
 const props = withDefaults(
@@ -19,6 +18,11 @@ const props = withDefaults(
 const itemKey = (item: DtdNode) => {
   return props.nodeKey && item.props?.[props.nodeKey] || item.dragId;
 };
+
+function selectNode(e: Event, node: DtdNode) {
+  e.stopPropagation();
+  console.log(node);
+}
 </script>
 
 <template>
@@ -28,12 +32,13 @@ const itemKey = (item: DtdNode) => {
     :key="itemKey(n)"
     :data="n"
     :disabled="n.disabled"
+    @click="e => selectNode(e, n)"
   >
     <slot :item="n"></slot>
-    <DtD :nodeClass v-if="n.children?.length" :node="n">
-      <template #default="{ item: cItem }">
-        <slot :item="cItem"></slot>
+    <DtdRecursion :nodeClass v-if="n.children?.length" :node="n">
+      <template #default="{ item }">
+        <slot :item="item"></slot>
       </template>
-    </DtD>
+    </DtdRecursion>
   </dtd-item>
 </template>

@@ -23,7 +23,7 @@ const components = ref<{
   }
 ])
 
-const current = ref<string>('TwoContainer Demo')
+const current = ref<string>('Tree Demo')
 
 const currentComponent = computed(() => {
   return components.value.find(item => item.title === current.value)?.component
