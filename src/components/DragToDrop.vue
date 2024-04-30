@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, inject, onBeforeUnmount } from 'vue'
 import DtdRecursion from './DtdRecursion.vue'
 import DtdItem from './DtdItem.vue'
 import { DtdNode } from '../model/DtdNode'
@@ -28,10 +28,17 @@ const dtdData = computed({
 })
 
 const mouse = inject<Mouse>(DTD_MOUSE)
-mouse.on(DragEventType.DragEnd, (e: MouseEvent, targetNode?: DtdNode) => {
+mouse?.on(DragEventType.DragEnd, (e: MouseEvent, targetNode?: DtdNode) => {
+  // 删除上次缓存
+  DtdNode.deleteCache(dtdData.value)
   // 更新
   dtdData.value = dtdData.value
 })
+
+onBeforeUnmount(() => {
+  DtdNode.clearCacheAll()
+})
+
 function init() {
     if (!props.nodeKey && !props.modelValue?.[0].id) {
         console.error('DragToDrop: key is required')

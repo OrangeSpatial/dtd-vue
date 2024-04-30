@@ -60,6 +60,7 @@ export class DtdNode {
         this.children = (node?.children || []).map((child) => new DtdNode(child, this));
       }
     TreeNodes.set(this.dragId, this);
+    console.log(this.dragId, TreeNodes.size, TreeNodes.get(this.dragId)?.props?.name);
   }
 
   static fromList(list: IDtdNode[]) {
@@ -74,6 +75,15 @@ export class DtdNode {
         children
       };
     });
+  }
+
+  static deleteCache(root: DtdNode) {
+    TreeNodes.delete(root.dragId);
+    root.children.forEach((child) => DtdNode.deleteCache(child));
+  }
+
+  static clearCacheAll() {
+    TreeNodes.clear();
   }
 }
 
@@ -109,7 +119,6 @@ export function insertNode(targetNode: DtdNode, sourceNode: DtdNode[], insertBef
     // 删除原节点
     deleteNode(sourceNode);
   }
-  console.log('TreeNodes', TreeNodes);
 }
 
 /**

@@ -16,6 +16,8 @@ const { mouse } = useCursor()
 provide(DTD_MOUSE, mouse)
 mouse.on(DragEventType.DragEnd, dragEndHandler)
 function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {
+    console.log('dragEndHandler', 1);
+    
     const sourceNode = mouse.dataTransfer
     const positionObj = getCursorPositionInDtdNode(e)
     carryNode.value = []
