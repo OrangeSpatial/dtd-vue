@@ -79,7 +79,7 @@ export class Mouse {
 
   ghostElement: HTMLElement
 
-  dataTransfer: DtdNode | null = null
+  dataTransfer: DtdNode[] = []
 
   startEvent: MouseEvent = new MouseEvent('')
   startTime: number = 0
@@ -177,7 +177,7 @@ export class Mouse {
       // 正在拖拽的node
       const node = getNode(dragId);
       if (node) {
-        this.dataTransfer = node;
+        if(!this.dataTransfer.includes(node)) this.dataTransfer = [node];
         this.dragPositionChangeCallbacks.get(DragEventType.DragStart)?.forEach((cb) => {
           cb(e, node);
         });
@@ -224,9 +224,6 @@ export class Mouse {
       this.dragElement = null;
     }
 
-    if (this.dataTransfer) {
-      this.dataTransfer = null;
-    }
     if (this.ghostElement) {
       removeGhostElStyle(this.ghostElement);
     }

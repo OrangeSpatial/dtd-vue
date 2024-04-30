@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useCursor } from '../hooks/cursorHook.ts'
 import { CSSProperties, inject, onBeforeUnmount, onMounted, ref } from 'vue'
 import { DragEventType, Mouse } from '../model/Mouse.ts'
 import { DtdNode, NodeLayout } from '../model/DtdNode.ts'
@@ -53,7 +52,7 @@ function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
   }
 
   // same source should be a draggingCoverRect
-  if (targetNode.root === mouse.dataTransfer?.root) {
+  if (targetNode.root === mouse?.dataTransfer?.[0]?.root) {
     updateDraggingCoverRectStyle(d_x, d_y)
   } else {
     resetDraggingCoverRectStyle()
@@ -69,7 +68,7 @@ function updateInsertionStyle(rect: DOMRect, x: number, y: number, vertical: boo
 }
 
 function updateDraggingCoverRectStyle(dx: number, dy: number) {
-  const dragRect = mouse.dragElement?.getBoundingClientRect()
+  const dragRect = mouse?.dragElement?.getBoundingClientRect()
   if (dragRect) {
     draggingCoverRectStyle.value = {
       transform: `perspective(1px) translate3d(${dx + dragRect.left}px,${dy + dragRect.top}px,0px)`,
@@ -128,7 +127,7 @@ onBeforeUnmount(() => {
     ></div>
     <div class="dtd-aux-dashed-box"></div>
     <div class="dtd-aux-selection-box"></div>
-    <div v-if="mouse?.dataTransfer" class="dtd-aux-cover-rect dragging" :style="draggingCoverRectStyle"></div>
+    <div v-if="mouse?.dataTransfer.length" class="dtd-aux-cover-rect dragging" :style="draggingCoverRectStyle"></div>
     <div v-if="currentTargetNode?.droppable" class="dtd-aux-cover-rect dropping" :style="droppingCoverRectStyle"></div>
   </div>
 </template>

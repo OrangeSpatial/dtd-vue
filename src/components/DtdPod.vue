@@ -18,9 +18,9 @@ mouse.on(DragEventType.DragEnd, dragEndHandler)
 function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {
     const sourceNode = mouse.dataTransfer
     const positionObj = getCursorPositionInDtdNode(e)
-    carryNode.value = undefined
-    if (!targetNode || !sourceNode || !positionObj || !mouse.dragElement) return
-    const dragType = sourceNode.dragType
+    carryNode.value = []
+    if (!targetNode || !sourceNode.length || !positionObj || !mouse.dragElement) return
+    const dragType = sourceNode[0].dragType
     const isContainerEdge = cursorAtContainerEdge(positionObj.rect, e)
     const isVertical = getLayoutNodeInContainer(positionObj.targetEl) === NodeLayout.VERTICAL
     const insertBefore = isVertical ? positionObj.insertBefore : positionObj.isLeft
@@ -31,10 +31,10 @@ function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {
     }
 }
 
-const carryNode = ref<DtdNode>()
+const carryNode = ref<DtdNode[]>([])
 
 mouse.on(DragEventType.DragStart, () => {
-    carryNode.value = mouse.dataTransfer as DtdNode
+    carryNode.value = mouse.dataTransfer
 })
 
 function ghostMounted(el: HTMLElement) {
@@ -51,7 +51,7 @@ onBeforeUnmount(() => {
     <slot></slot>
     <dtd-aux-tool />
     <dtd-ghost @mounted="ghostMounted">
-        <slot name="ghost" v-if="carryNode" :item="carryNode?.props" />
+        <slot name="ghost" v-if="carryNode.length" :item="carryNode[0]?.props" />
     </dtd-ghost>
 </template>
 
