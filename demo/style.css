@@ -54,3 +54,8 @@ pre {
     background-color: #f0f0f0;
     padding: 10px;
 }
+
+.bg-blue {
+    background-color: #0092fbe1;
+    color: white;
+}

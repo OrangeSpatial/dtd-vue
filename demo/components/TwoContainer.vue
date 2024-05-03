@@ -37,7 +37,7 @@ const data1 = ref([
     <dtd-pod>
         <div class="container">
             <div class="left">
-                <DragToDrop nodeClass="node-class" class="dtd-root" v-model="data">
+                <DragToDrop drag-type="copy" nodeClass="node-class" class="dtd-root" v-model="data">
                     <template #default="{ item }">
                         <div class="dtd-item">{{ item.props?.name }}</div>
                     </template>
@@ -51,6 +51,9 @@ const data1 = ref([
                 </DragToDrop>
             </div>
         </div>
+        <template #ghost="{ item }">
+            <div class="ghost-custom bg-blue">{{ item?.name }}</div>
+        </template>
     </dtd-pod>
     <div class="title">渲染数据：</div>
     <div class="container">

@@ -4,7 +4,7 @@ import DtdRecursion from './DtdRecursion.vue'
 import DtdItem from './DtdItem.vue'
 import { DtdNode } from '../model/DtdNode'
 import { DTD_MOUSE } from '../common/injectSymbol'
-import { DragEventType, Mouse } from '../model/Mouse'
+import { DragEventType, DragNodeType, Mouse } from '../model/Mouse'
 
 defineOptions({
   name: 'DragToDrop',
@@ -14,14 +14,20 @@ const props = withDefaults(defineProps<{
   modelValue: any[]
   nodeKey?: string
   nodeClass?: string
+  dragType?: DragNodeType
 }>(), {
-  nodeKey: 'id'
+  nodeKey: 'id',
+  dragType: DragNodeType.MOVE
 })
 const emits = defineEmits<{
   (event: 'update:modelValue', value: Array<any>): void
 }>()
 const dtdData = computed({
-  get: () => DtdNode.fromList(props.modelValue || []),
+  get: () => {
+    const root = DtdNode.fromList(props.modelValue || [])
+    root.dragType = props.dragType
+    return root
+  },
   set: (value: DtdNode) => {
     emits('update:modelValue', DtdNode.toList(value))
   }
@@ -29,9 +35,8 @@ const dtdData = computed({
 
 const mouse = inject<Mouse>(DTD_MOUSE)
 mouse?.on(DragEventType.DragEnd, (e: MouseEvent, targetNode?: DtdNode) => {
-  if(!targetNode || !mouse.dataTransfer.length) return
-  const parentNode = mouse.dataTransfer.find(node => node.isParentOf(targetNode))
-  if (parentNode) return
+  if(!mouse.dataTransfer.length) return
+  if (targetNode && mouse.dataTransfer.find(node => node.isParentOf(targetNode))) return
   // 删除上次缓存
   DtdNode.deleteCache(dtdData.value)
   // 更新
