@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { CSSProperties, inject, onBeforeUnmount, onMounted, ref } from 'vue'
-import { DragEventType, DragNodeType, Mouse } from '../model/Mouse.ts'
-import { DtdNode, NodeLayout } from '../model/DtdNode.ts'
-import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts'
-import { initStyle } from '../common/presets.ts'
-import { DTD_MOUSE } from '../common/injectSymbol.ts'
+import { DragEventType, DragNodeType, Mouse } from '../../model/Mouse.ts'
+import { DtdNode, NodeLayout } from '../../model/DtdNode.ts'
+import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../../common/dtdHelper.ts'
+import { initStyle } from '../../common/presets.ts'
+import { DTD_MOUSE } from '../../common/injectSymbol.ts'
+import Selection from './Selection.vue'
 
 withDefaults(defineProps<{
   insertionBgColor?: string
@@ -129,7 +130,7 @@ onBeforeUnmount(() => {
       :style="{...insertionStyle, backgroundColor: insertionBgColor}"
     ></div>
     <div class="dtd-aux-dashed-box"></div>
-    <div class="dtd-aux-selection-box"></div>
+    <Selection></Selection>
     <div v-if="mouse?.dataTransfer.length" class="dtd-aux-cover-rect dragging" :style="draggingCoverRectStyle"></div>
     <div v-if="currentTargetNode?.droppable" class="dtd-aux-cover-rect dropping" :style="droppingCoverRectStyle"></div>
   </div>

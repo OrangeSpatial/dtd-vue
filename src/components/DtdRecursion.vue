@@ -14,15 +14,9 @@ const props = withDefaults(
   }>(),
   {}
 );
-
 const itemKey = (item: DtdNode) => {
   return props.nodeKey && item.props?.[props.nodeKey] || item.dragId;
 };
-
-function selectNode(e: Event, node: DtdNode) {
-  e.stopPropagation();
-  console.log(node);
-}
 </script>
 
 <template>
@@ -32,7 +26,6 @@ function selectNode(e: Event, node: DtdNode) {
     :key="itemKey(n)"
     :data="n"
     :disabled="n.disabled"
-    @click="e => selectNode(e, n)"
   >
     <slot :item="n"></slot>
     <DtdRecursion :nodeClass v-if="n.children?.length" :node="n">

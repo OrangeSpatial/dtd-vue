@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { DtdNode, NodeLayout, insertNode, insertNodeInContainer } from '../model/DtdNode.ts'
 import { useCursor } from '../hooks/cursorHook.ts'
-import DtdAuxTool from './DtdAuxTool.vue'
+import DtdAuxTool from './extraTool/DtdAuxTool.vue'
 import DtdGhost from './DtdGhost.vue'
 import { onBeforeUnmount, ref, provide } from 'vue';
 import { DragEventType, DragNodeType } from '../model/Mouse.ts';
@@ -33,6 +33,7 @@ function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {
     } else {
         insertNode(targetNode, sourceNode, isVertical ? positionObj.isTop : positionObj.isLeft, dragType)
     }
+    // TODO 激活插入的节点
 }
 
 const carryNode = ref<DtdNode[]>([])
