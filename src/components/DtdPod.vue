@@ -4,7 +4,7 @@ import { useCursor } from '../hooks/cursorHook.ts'
 import DtdAuxTool from './DtdAuxTool.vue'
 import DtdGhost from './DtdGhost.vue'
 import { onBeforeUnmount, ref, provide } from 'vue';
-import { DragEventType } from '../model/Mouse.ts';
+import { DragEventType, DragNodeType } from '../model/Mouse.ts';
 import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts';
 import { DTD_MOUSE } from '../common/injectSymbol.ts'
 
@@ -22,8 +22,9 @@ function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {
     if (!targetNode || !sourceNode.length || !positionObj || !mouse.dragElement) return
     const parentNode = sourceNode.find(node => node.isParentOf(targetNode))
     if (parentNode) return
-    // if (targetNode.dragId === sourceNode[0].dragId) return
-    const dragType = sourceNode[0].dragType
+    // COPY 拖拽不允许插入到容器内
+    if (targetNode.root.dragType === DragNodeType.COPY) return
+    const dragType = sourceNode[0].root.dragType
     const isContainerEdge = cursorAtContainerEdge(positionObj.rect, e)
     const isVertical = getLayoutNodeInContainer(positionObj.targetEl) === NodeLayout.VERTICAL
     const insertBefore = isVertical ? positionObj.insertBefore : positionObj.isLeft

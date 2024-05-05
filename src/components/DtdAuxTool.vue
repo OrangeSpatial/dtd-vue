@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { CSSProperties, inject, onBeforeUnmount, onMounted, ref } from 'vue'
-import { DragEventType, Mouse } from '../model/Mouse.ts'
+import { DragEventType, DragNodeType, Mouse } from '../model/Mouse.ts'
 import { DtdNode, NodeLayout } from '../model/DtdNode.ts'
 import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts'
 import { initStyle } from '../common/presets.ts'
@@ -27,7 +27,7 @@ const currentTargetNode = ref<DtdNode>()
 function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
 
   const positionObj = getCursorPositionInDtdNode(e)
-  if (!positionObj || !targetNode) {
+  if (!positionObj || !targetNode || targetNode.root.dragType === DragNodeType.COPY) {
     resetInsertionStyle()
     resetDraggingCoverRectStyle()
     resetDroppingCoverRectStyle()

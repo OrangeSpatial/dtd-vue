@@ -10,6 +10,7 @@ export enum CursorStatus {
 export enum CursorDragType {
   Grabbing = 'GRABBING',
   Move = 'MOVE',
+  Copy = 'COPY',
   Resize = 'RESIZE',
   Rotate = 'ROTATE',
   Scale = 'SCALE',
@@ -168,6 +169,9 @@ export class Mouse {
     if (dragId) {
       // 正在拖拽的node
       const node = getNode(dragId);
+      if (node?.root.dragType === DragNodeType.COPY) {
+        setCursorStyle(window, CursorDragType.Copy);
+      }
       if (node) {
         if(!this.dataTransfer.includes(node)) this.dataTransfer = [node];
         this.dragPositionChangeCallbacks.get(DragEventType.DragStart)?.forEach((cb) => {

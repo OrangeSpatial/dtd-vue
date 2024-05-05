@@ -32,7 +32,7 @@ export class DtdNode {
   parent!: DtdNode;
   depth = 0;
   dragId!: string;
-  dragType!: DragNodeType;
+  dragType: DragNodeType = DragNodeType.MOVE;
   droppable = false;
   disabled = false;
   props: IDtdNode['props'] = {};
@@ -55,19 +55,20 @@ export class DtdNode {
     if (node) {
       this.props = node.props || node;
       if (node.droppable) this.droppable = node.droppable;
-      if (node.dragType && Object.values(DragNodeType).includes(node.dragType)) this.dragType = node.dragType;
-      else this.dragType = DragNodeType.MOVE;
-        this.children = (node?.children || []).map((child) => new DtdNode(child, this));
+      if (node.dragType && Object.values(DragNodeType).includes(node.dragType)) {
+        this.dragType = node.dragType;
       }
+      this.children = (node?.children || []).map((child) => new DtdNode(child, this));
+    }
     TreeNodes.set(this.dragId, this);
     console.log(this.dragId, TreeNodes.size, TreeNodes.get(this.dragId)?.props?.name);
   }
 
   static fromList(list: IDtdNode[]) {
-    return new DtdNode({children: list});
+    return new DtdNode({ children: list });
   }
 
-  static toList(node: DtdNode): any[]{
+  static toList(node: DtdNode): any[] {
     return node.children.map((child) => {
       const children = child.children?.length ? DtdNode.toList(child) : undefined
       return {
@@ -117,7 +118,7 @@ export function insertNode(targetNode: DtdNode, sourceNode: DtdNode[], insertBef
   parent.children.splice(
     parent.children.indexOf(targetNode) + (insertBefore ? 0 : 1),
     0,
-    ...sourceNode.map(node => new DtdNode({...node, dragId: ''}, parent))
+    ...sourceNode.map(node => new DtdNode({ ...node, dragId: '' }, parent))
   );
 
   if (type === DragNodeType.MOVE) {
@@ -136,7 +137,7 @@ export function insertNode(targetNode: DtdNode, sourceNode: DtdNode[], insertBef
  */
 export function insertNodeInContainer(targetNode: DtdNode, sourceNode: DtdNode[], insertBefore: boolean, type: DragNodeType) {
   if (!targetNode || !sourceNode) return;
-  const newNodes = sourceNode.map(node => new DtdNode({...node, dragId: ''}, targetNode))
+  const newNodes = sourceNode.map(node => new DtdNode({ ...node, dragId: '' }, targetNode))
   insertBefore ? targetNode.children.unshift(...newNodes) : targetNode.children.push(...newNodes);
   if (type === DragNodeType.MOVE) {
     // 删除原节点
@@ -157,6 +158,6 @@ export function getClosetDroppableNode(dragId: string) {
   return node;
 }
 
-export function  clearTreeNodes() {
+export function clearTreeNodes() {
   TreeNodes.clear();
 }
