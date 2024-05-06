@@ -36,7 +36,9 @@ const data = ref([
   <div style="padding: 24px;">
     <dtd-pod>
         <div>
-          <DragToDrop nodeClass="node-class" class="dtd-root" v-model="data">
+          <DragToDrop nodeClass="node-class" class="dtd-root" :data="data"
+          @change="d => data = d"
+          >
               <template #default="{ item }">
                   <div class="dtd-item">{{ item.props?.name }}</div>
               </template>

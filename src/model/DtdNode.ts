@@ -1,3 +1,4 @@
+import { isReactive } from 'vue';
 import { uid } from '../common/uid.ts';
 import { DragNodeType } from './Mouse.ts'
 
@@ -101,7 +102,7 @@ export function deleteNode(node: DtdNode | DtdNode[]) {
     return;
   }
   const parent = node.parent || node;
-  parent.children = parent.children.filter((child) => child !== node);
+  parent.children = parent.children.filter((child) => child.dragId !== node.dragId);
   TreeNodes.delete(node.dragId);
 }
 
@@ -116,7 +117,7 @@ export function insertNode(targetNode: DtdNode, sourceNode: DtdNode[], insertBef
   if (!targetNode || !sourceNode) return;
   const parent = targetNode.parent || targetNode;
   parent.children.splice(
-    parent.children.indexOf(targetNode) + (insertBefore ? 0 : 1),
+    parent.children.findIndex(node => targetNode.dragId === node.dragId) + (insertBefore ? 0 : 1),
     0,
     ...sourceNode.map(node => new DtdNode({ ...node, dragId: '' }, parent))
   );

@@ -3,13 +3,18 @@ import { DtdNode, NodeLayout, insertNode, insertNodeInContainer } from '../model
 import { useCursor } from '../hooks/cursorHook.ts'
 import DtdAuxTool from './DtdAuxTool.vue'
 import DtdGhost from './DtdGhost.vue'
-import { onBeforeUnmount, ref, provide } from 'vue';
+import { onBeforeUnmount, ref, provide, onMounted, CSSProperties } from 'vue';
 import { DragEventType, DragNodeType } from '../model/Mouse.ts';
 import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts';
 import { DTD_MOUSE } from '../common/injectSymbol.ts'
 
 defineOptions({
     name: 'DtdPod',
+})
+
+const podRef = ref<HTMLElement>()
+const podStyle = ref<CSSProperties>({
+    transform: 'translate(0, 0)',
 })
 
 const { mouse } = useCursor()
@@ -47,22 +52,40 @@ function ghostMounted(el: HTMLElement) {
 
 onBeforeUnmount(() => {
     mouse.off(DragEventType.DragEnd, dragEndHandler)
+    if (podRef.value) {
+        podRef.value.removeEventListener('scroll', podScrollHandler)
+    }
+})
+
+function podScrollHandler(e: Event) {
+    console.log('scroll');
+    const target = e.target as HTMLElement
+    podStyle.value.transform = `translate(${target.scrollLeft}px, ${target.scrollTop}px)`
+}
+
+onMounted(() => {
+    if (podRef.value) {
+        podRef.value.addEventListener('scroll', podScrollHandler)
+    }
 })
 
 </script>
 
 <template>
-    <slot></slot>
-    <dtd-aux-tool />
-    <dtd-ghost @mounted="ghostMounted">
-        <slot name="ghost" v-if="carryNode.length" :item="carryNode[0]?.props" />
-    </dtd-ghost>
+    <div ref="podRef" class="dtd-pod">
+        <slot></slot>
+        <dtd-aux-tool :style="podStyle"/>
+        <dtd-ghost @mounted="ghostMounted">
+            <slot name="ghost" v-if="carryNode.length" :item="carryNode[0]?.props" />
+        </dtd-ghost>
+    </div>
 </template>
 
 <style scoped>
-.drag-to-drop {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+.dtd-pod {
+    position: relative;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(196, 255, 249, 0.619);
 }
 </style>

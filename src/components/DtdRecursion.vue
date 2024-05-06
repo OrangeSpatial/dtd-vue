@@ -9,15 +9,10 @@ defineOptions({
 const props = withDefaults(
   defineProps<{
     node: DtdNode;
-    nodeKey?: string;
     nodeClass?: string;
   }>(),
   {}
 );
-
-const itemKey = (item: DtdNode) => {
-  return props.nodeKey && item.props?.[props.nodeKey] || item.dragId;
-};
 
 function selectNode(e: Event, node: DtdNode) {
   e.stopPropagation();
@@ -29,7 +24,7 @@ function selectNode(e: Event, node: DtdNode) {
   <dtd-item
     :class="nodeClass ? nodeClass : ''"
     v-for="n in node.children"
-    :key="itemKey(n)"
+    :key="n.dragId"
     :data="n"
     :disabled="n.disabled"
     @click="e => selectNode(e, n)"
