@@ -4,6 +4,7 @@ import type { Component } from 'vue'
 import Tree from './components/Tree.vue'
 import Horizon from './components/Horizon.vue'
 import TwoContainer from './components/TwoContainer.vue'
+import Select from './components/Select.vue'
 
 const components = ref<{
   title: string
@@ -20,6 +21,10 @@ const components = ref<{
   {
     title: 'TwoContainer Demo',
     component: TwoContainer
+  },
+  {
+    title: 'Select Demo',
+    component: Select
   }
 ])
 

@@ -13,11 +13,6 @@ const props = withDefaults(
   }>(),
   {}
 );
-
-function selectNode(e: Event, node: DtdNode) {
-  e.stopPropagation();
-  console.log(node);
-}
 </script>
 
 <template>
@@ -27,7 +22,6 @@ function selectNode(e: Event, node: DtdNode) {
     :key="n.dragId"
     :data="n"
     :disabled="n.disabled"
-    @click="e => selectNode(e, n)"
   >
     <slot :item="n"></slot>
     <DtdRecursion :nodeClass v-if="n.children?.length" :node="n">

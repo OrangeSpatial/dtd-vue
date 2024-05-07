@@ -23,12 +23,16 @@ export enum DragEventType {
   DragStart = 'dragstart',
   Dragging = 'dragging',
   DragEnd = 'dragend',
+  Select = 'select',
+  Click = 'click',
 }
 
 export enum DragNodeType {
   MOVE = 'move',
   COPY = 'copy'
 }
+
+export interface ISelectNode { node: DtdNode, e: MouseEvent }
 
 export interface ICursorPosition {
   pageX?: number
@@ -85,15 +89,19 @@ export class Mouse {
   startEvent: MouseEvent = new MouseEvent('')
   startTime: number = 0
 
-  dragPositionChangeCallbacks = new Map<string, ((e: MouseEvent, targetNode?: DtdNode) => void)[]>()
+  eventCallbacks = new Map<string, ((e: MouseEvent, targetNode?: DtdNode) => void)[]>()
 
-  node: DtdNode | null = null
+  selectedNodes: ISelectNode[] = []
 
   constructor() {
   }
 
-  public setNode(node: DtdNode): void {
-    this.node = node;
+  public setSelectedNodes(nodes: ISelectNode[]): void {
+    if (!nodes || !Array.isArray(nodes)) return;
+    this.selectedNodes = nodes;
+    this.eventCallbacks.get(DragEventType.Select)?.forEach((cb) => {
+      cb(new MouseEvent(''), nodes[0].node);
+    });
   }
 
   public setGhostElement(ghostElement: HTMLElement | null): void {
@@ -122,23 +130,34 @@ export class Mouse {
 
   on(eventType: DragEventType, callback: (e: MouseEvent, targetNode?: DtdNode) => void) {
     if (!eventType || !callback) return;
-    if (this.dragPositionChangeCallbacks.has(eventType)) {
-      if (this.dragPositionChangeCallbacks.get(eventType)?.includes(callback)) return;
-      this.dragPositionChangeCallbacks.get(eventType)?.push(callback);
+    if (this.eventCallbacks.has(eventType)) {
+      if (this.eventCallbacks.get(eventType)?.includes(callback)) return;
+      this.eventCallbacks.get(eventType)?.push(callback);
     } else {
-      this.dragPositionChangeCallbacks.set(eventType, [callback]);
+      this.eventCallbacks.set(eventType, [callback]);
     }
   }
 
   off(eventType: DragEventType, callback: (e: MouseEvent, targetNode: DtdNode) => void) {
     if (!eventType || !callback) return;
-    if (this.dragPositionChangeCallbacks.has(eventType)) {
-      const callbacks = this.dragPositionChangeCallbacks.get(eventType);
+    if (this.eventCallbacks.has(eventType)) {
+      const callbacks = this.eventCallbacks.get(eventType);
       const index = callbacks?.findIndex((cb) => cb === callback);
       if (isValidNumber(index) && index !== -1) {
         callbacks?.splice(index, 1);
       }
     }
+  }
+
+  isValideClick(e: MouseEvent) {
+    const distance = Math.sqrt(
+      Math.pow(e.pageX - this.startEvent.pageX, 2) +
+      Math.pow(e.pageY - this.startEvent.pageY, 2)
+    )
+    const timeDelta = Date.now() - this.startTime
+    console.timeEnd('up');
+    console.log(distance, timeDelta);
+    return distance <= 3 && timeDelta < 300;
   }
 
   isValidDragStart(e: MouseEvent) {
@@ -174,7 +193,7 @@ export class Mouse {
       }
       if (node) {
         if(!this.dataTransfer.includes(node)) this.dataTransfer = [node];
-        this.dragPositionChangeCallbacks.get(DragEventType.DragStart)?.forEach((cb) => {
+        this.eventCallbacks.get(DragEventType.DragStart)?.forEach((cb) => {
           cb(e, node);
         });
       }
@@ -193,7 +212,7 @@ export class Mouse {
     const target = getClosestDtdNode(e) as HTMLElement;
     const dragId = target?.getAttribute(DTD_BASE_KEY) as string;
     const targetNode = getNode(dragId);
-    this.dragPositionChangeCallbacks.get(DragEventType.Dragging)?.forEach((cb) => {
+    this.eventCallbacks.get(DragEventType.Dragging)?.forEach((cb) => {
       cb(e, targetNode);
     });
   }
@@ -210,9 +229,12 @@ export class Mouse {
       clientY: e.clientY,
     });
     // 事件
-    this.dragPositionChangeCallbacks.get(DragEventType.DragEnd)?.forEach((cb) => {
+    this.eventCallbacks.get(DragEventType.DragEnd)?.forEach((cb) => {
       const dragId = getClosestDtdNode(e)?.getAttribute(DTD_BASE_KEY) as string;
       const targetNode = getNode(dragId);
+      if (targetNode && targetNode.root.dragType !== DragNodeType.COPY) {
+        this.setSelectedNodes([{ node: targetNode, e }]);
+      }
       cb(e, targetNode);
     });
       // 移除拖拽元素
@@ -235,11 +257,22 @@ export class Mouse {
   public down = (e: MouseEvent) => {
     this.startEvent = e;
     this.startTime = Date.now();
+    console.time('up');
     document.addEventListener('mousemove', this.move);
     document.addEventListener('mouseup', this.up);
   }
 
   public up = (e: MouseEvent) => {
+    if(this.isValideClick(e)) {
+      const dragId = getClosestDtdNode(e)?.getAttribute(DTD_BASE_KEY) as string;
+      const targetNode = getNode(dragId);
+      if (targetNode && targetNode.root.dragType !== DragNodeType.COPY) {
+        this.setSelectedNodes([{ node: targetNode, e }]);
+      }
+      this.eventCallbacks.get(DragEventType.Click)?.forEach((cb) => {
+        cb(e, targetNode);
+      });
+    }
     this.onDragEnd(e);
     document.removeEventListener('mousemove', this.move);
     document.removeEventListener('mouseup', this.up);

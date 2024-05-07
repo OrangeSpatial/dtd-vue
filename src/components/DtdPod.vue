@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DtdNode, NodeLayout, insertNode, insertNodeInContainer } from '../model/DtdNode.ts'
-import { useCursor } from '../hooks/cursorHook.ts'
+import { useCursor } from '../hooks/useCursor.ts'
 import DtdAuxTool from './DtdAuxTool.vue'
 import DtdGhost from './DtdGhost.vue'
 import { onBeforeUnmount, ref, provide, onMounted, CSSProperties } from 'vue';
@@ -86,6 +86,5 @@ onMounted(() => {
     position: relative;
     height: 100%;
     overflow: auto;
-    background-color: rgba(196, 255, 249, 0.619);
 }
 </style>

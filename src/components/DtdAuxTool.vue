@@ -5,6 +5,7 @@ import { DtdNode, NodeLayout } from '../model/DtdNode.ts'
 import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts'
 import { initStyle } from '../common/presets.ts'
 import { DTD_MOUSE } from '../common/injectSymbol.ts'
+import AuxSelection from './selection/Index.vue'
 
 withDefaults(defineProps<{
   insertionBgColor?: string
@@ -48,7 +49,6 @@ function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
   const d_y = e.pageY - e.clientY
   const left = d_x + rect.left - pX
   const top = d_y + rect.top - pY
-  console.log(d_x, d_y, left, top);
   
   const x = isVertical ? left : isLeft ? left : left + rect.width
   const y = isVertical ? isTop ? top : top + rect.height : top
@@ -136,7 +136,7 @@ onBeforeUnmount(() => {
       :style="{...insertionStyle, backgroundColor: insertionBgColor}"
     ></div>
     <div class="dtd-aux-dashed-box"></div>
-    <div class="dtd-aux-selection-box"></div>
+    <aux-selection :parentEl="auxToolRef"/>
     <div v-if="mouse?.dataTransfer.length" class="dtd-aux-cover-rect dragging" :style="draggingCoverRectStyle"></div>
     <div v-if="currentTargetNode?.droppable" class="dtd-aux-cover-rect dropping" :style="droppingCoverRectStyle"></div>
   </div>

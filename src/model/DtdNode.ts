@@ -1,4 +1,3 @@
-import { isReactive } from 'vue';
 import { uid } from '../common/uid.ts';
 import { DragNodeType } from './Mouse.ts'
 
@@ -61,8 +60,8 @@ export class DtdNode {
       }
       this.children = (node?.children || []).map((child) => new DtdNode(child, this));
     }
+    // TODO 响应式处理
     TreeNodes.set(this.dragId, this);
-    console.log(this.dragId, TreeNodes.size, TreeNodes.get(this.dragId)?.props?.name);
   }
 
   static fromList(list: IDtdNode[]) {
