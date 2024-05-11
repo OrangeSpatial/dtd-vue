@@ -100,6 +100,8 @@ function resetInsertionStyle() {
   insertionStyle.value = {
     top: 0,
     left: 0,
+    height: 0,
+    width: 0,
     transform: `perspective(1px) translate3d(0px,0px,0px)`,
   }
 }

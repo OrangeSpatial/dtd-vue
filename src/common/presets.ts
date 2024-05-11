@@ -5,6 +5,7 @@ export const initStyle = {
   left: 0,
   width: 0,
   height: 0,
+  borderWidth: 0,
 };
 
 export const edgeGap = 10;
