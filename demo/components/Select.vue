@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const selectData = ref()
 
@@ -32,12 +32,16 @@ const data = ref([
     ],
   }
 ])
+
+function selectedHandle(data: any) {
+  selectData.value = data
+}
 </script>
 
 <template>
   <div class="flex">
     <div class="flex-1" style="padding: 24px;">
-      <dtd-pod>
+      <dtd-pod @selected="selectedHandle">
         <div>
           <DragToDrop nodeClass="node-class" class="dtd-root" :data="data" @change="d => data = d">
             <template #default="{ item }">

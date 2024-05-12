@@ -143,7 +143,7 @@ export function insertNode(
     }
     return node;
   });
-  mouse.selectedNodes = insertNodes.map(node => ({ node, e }));
+  mouse.setSelectedNodes(insertNodes.map(node => ({ node, e })), e, targetNode);
   parent.children.splice(
     parent.children.findIndex(node => targetNode.dragId === node.dragId) + (insertBefore ? 0 : 1),
     0,
@@ -179,7 +179,7 @@ export function insertNodeInContainer(
     }
     return node;
   })
-  mouse.selectedNodes = insertNodes.map(node => ({ node, e }));
+  mouse.setSelectedNodes(insertNodes.map(node => ({ node, e })), e, targetNode);
   insertBefore ? targetNode.children.unshift(...insertNodes) : targetNode.children.push(...insertNodes);
 }
 

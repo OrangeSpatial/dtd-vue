@@ -27,7 +27,7 @@ function selectHandler(e: MouseEvent, targetNode?: DtdNode) {
     mouse?.selectedNodes.forEach(selectNode => {
         selectNodes.value.push(selectNode.node)
         nextTick(() => {
-            updateSelectionRectStyle(selectNode.e, targetNode, Boolean(e.type))
+            updateSelectionRectStyle(selectNode.e, targetNode, Boolean(targetNode))
         })
     })
 }
@@ -62,11 +62,7 @@ function updateSelectionRectStyle(e: MouseEvent, targetNode?: DtdNode, isDragEnd
     
     if (isDragEnd) {
         // 拖拽
-        if (!targetNode) {
-            resetSelectionRectStyle()
-            return
-        }
-        // TODO 选中拖拽节点
+        // 选中拖拽节点
         const isContainerEdge = cursorAtContainerEdge(positionObj.rect, e)
         // 获取所有拖拽节点对应的dom
         // 如果是放入容器，在容器内计算最大矩形
@@ -115,11 +111,9 @@ function resetSelectionRectStyle() {
 }
 onMounted(() => {
     mouse.on(DragEventType.Select, selectHandler)
-    mouse.on(DragEventType.DragEnd, selectHandler)
 })
 onBeforeUnmount(() => {
     mouse.off(DragEventType.Select, selectHandler)
-    mouse.off(DragEventType.DragEnd, selectHandler)
 })
 </script>
 

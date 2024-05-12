@@ -96,9 +96,12 @@ export class Mouse {
   constructor() {
   }
 
-  public setSelectedNodes(nodes: ISelectNode[]): void {
+  public setSelectedNodes(nodes: ISelectNode[], e: MouseEvent, targetNode?: DtdNode): void {
     if (!nodes || !Array.isArray(nodes)) return;
     this.selectedNodes = nodes;
+    this.eventCallbacks.get(DragEventType.Select)?.forEach((cb) => {
+      cb(e, targetNode);
+    });
   }
 
   public setGhostElement(ghostElement: HTMLElement | null): void {
@@ -227,13 +230,6 @@ export class Mouse {
     this.eventCallbacks.get(DragEventType.DragEnd)?.forEach((cb) => {
       const dragId = getClosestDtdNode(e)?.getAttribute(DTD_BASE_KEY) as string;
       const targetNode = getNode(dragId);
-      // if (targetNode && targetNode.root.dragType !== DragNodeType.COPY) {
-      //   // 拖拽节点加入选中节点中
-      //   this.setSelectedNodes(this.dataTransfer.map((node) => ({
-      //     node,
-      //     e
-      //   })));
-      // }
       cb(e, targetNode);
     });
       // 移除拖拽元素
@@ -265,10 +261,7 @@ export class Mouse {
       const dragId = getClosestDtdNode(e)?.getAttribute(DTD_BASE_KEY) as string;
       const targetNode = getNode(dragId);
       if (targetNode && targetNode.root.dragType !== DragNodeType.COPY) {
-        this.setSelectedNodes([{ node: targetNode, e }]);
-        this.eventCallbacks.get(DragEventType.Select)?.forEach((cb) => {
-          cb(new MouseEvent(''));
-        });
+        this.setSelectedNodes([{ node: targetNode, e }], e);
       }
       this.eventCallbacks.get(DragEventType.Click)?.forEach((cb) => {
         cb(e, targetNode);

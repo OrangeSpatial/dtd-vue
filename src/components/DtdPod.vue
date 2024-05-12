@@ -12,6 +12,10 @@ defineOptions({
     name: 'DtdPod',
 })
 
+const emits = defineEmits<{
+    (e: 'selected', data: any): void
+}>()
+
 const podRef = ref<HTMLElement>()
 const podStyle = ref<CSSProperties>({
     transform: 'translate(0, 0)',
@@ -63,12 +67,21 @@ function podScrollHandler(e: Event) {
     podStyle.value.transform = `translate(${target.scrollLeft}px, ${target.scrollTop}px)`
 }
 
+function selectHandler() {
+    emits('selected', mouse.selectedNodes[0]?.node?.props)
+}
+
 onMounted(() => {
+    // TODO 优化
     if (podRef.value) {
         podRef.value.addEventListener('scroll', podScrollHandler)
     }
+    mouse.on(DragEventType.Select, selectHandler)
 })
 
+onBeforeUnmount(() => {
+    mouse.off(DragEventType.Select, selectHandler)
+})
 </script>
 
 <template>
