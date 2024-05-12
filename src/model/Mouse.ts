@@ -99,9 +99,6 @@ export class Mouse {
   public setSelectedNodes(nodes: ISelectNode[]): void {
     if (!nodes || !Array.isArray(nodes)) return;
     this.selectedNodes = nodes;
-    this.eventCallbacks.get(DragEventType.Select)?.forEach((cb) => {
-      cb(new MouseEvent(''), nodes[0].node);
-    });
   }
 
   public setGhostElement(ghostElement: HTMLElement | null): void {
@@ -155,8 +152,6 @@ export class Mouse {
       Math.pow(e.pageY - this.startEvent.pageY, 2)
     )
     const timeDelta = Date.now() - this.startTime
-    console.timeEnd('up');
-    console.log(distance, timeDelta);
     return distance <= 3 && timeDelta < 300;
   }
 
@@ -232,9 +227,13 @@ export class Mouse {
     this.eventCallbacks.get(DragEventType.DragEnd)?.forEach((cb) => {
       const dragId = getClosestDtdNode(e)?.getAttribute(DTD_BASE_KEY) as string;
       const targetNode = getNode(dragId);
-      if (targetNode && targetNode.root.dragType !== DragNodeType.COPY) {
-        this.setSelectedNodes([{ node: targetNode, e }]);
-      }
+      // if (targetNode && targetNode.root.dragType !== DragNodeType.COPY) {
+      //   // 拖拽节点加入选中节点中
+      //   this.setSelectedNodes(this.dataTransfer.map((node) => ({
+      //     node,
+      //     e
+      //   })));
+      // }
       cb(e, targetNode);
     });
       // 移除拖拽元素
@@ -257,7 +256,6 @@ export class Mouse {
   public down = (e: MouseEvent) => {
     this.startEvent = e;
     this.startTime = Date.now();
-    console.time('up');
     document.addEventListener('mousemove', this.move);
     document.addEventListener('mouseup', this.up);
   }
@@ -268,6 +266,9 @@ export class Mouse {
       const targetNode = getNode(dragId);
       if (targetNode && targetNode.root.dragType !== DragNodeType.COPY) {
         this.setSelectedNodes([{ node: targetNode, e }]);
+        this.eventCallbacks.get(DragEventType.Select)?.forEach((cb) => {
+          cb(new MouseEvent(''));
+        });
       }
       this.eventCallbacks.get(DragEventType.Click)?.forEach((cb) => {
         cb(e, targetNode);

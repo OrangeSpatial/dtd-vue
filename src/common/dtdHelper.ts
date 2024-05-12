@@ -60,3 +60,23 @@ export function getLayoutNodeInContainer(container: HTMLElement) {
     }
     return NodeLayout.VERTICAL
 }
+
+/**
+ * 计算多个dom的最大外接矩形
+ */
+export function getBoundingRects(els: (Element | null)[]) {
+  const rects = els.filter((el) => el).map((el) => el!.getBoundingClientRect())
+  if (!rects.length) return null
+  const top = Math.min(...rects.map((rect) => rect.top))
+  const left = Math.min(...rects.map((rect) => rect.left))
+  const bottom = Math.max(...rects.map((rect) => rect.bottom))
+  const right = Math.max(...rects.map((rect) => rect.right))
+  return {
+    top,
+    left,
+    bottom,
+    right,
+    width: right - left,
+    height: bottom - top
+  }
+}

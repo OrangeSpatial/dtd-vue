@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { CSSProperties, inject, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
-import { initStyle } from '../../common/presets';
+import { DTD_BASE_KEY, initStyle } from '../../common/presets';
 import { DragEventType, Mouse } from '../../model/Mouse';
 import { DTD_MOUSE } from '../../common/injectSymbol';
-import { DtdNode } from '../../model/DtdNode';
-import { getCursorPositionInDtdNode } from '../../common/dtdHelper';
+import { DtdNode, NodeLayout } from '../../model/DtdNode';
+import { cursorAtContainerEdge, getBoundingRects, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../../common/dtdHelper';
 
 
 defineOptions({
-  name: 'AuxSelection',
+    name: 'AuxSelection',
 })
 
 const props = defineProps<{
@@ -22,14 +22,17 @@ const mouse = inject<Mouse>(DTD_MOUSE)
 if (!mouse) {
     throw new Error('DtdAuxTool: mouse is required')
 }
-function selectHandler() {
+function selectHandler(e: MouseEvent, targetNode?: DtdNode) {
     selectNodes.value = []
     mouse?.selectedNodes.forEach(selectNode => {
         selectNodes.value.push(selectNode.node)
-        updateSelectionRectStyle(selectNode.e)
+        nextTick(() => {
+            updateSelectionRectStyle(selectNode.e, targetNode, Boolean(e.type))
+        })
     })
 }
-function updateSelectionRectStyle(e: MouseEvent) {
+
+function updateSelectionRectStyle(e: MouseEvent, targetNode?: DtdNode, isDragEnd = false) {
     if (!e) {
         resetSelectionRectStyle()
         return
@@ -39,18 +42,71 @@ function updateSelectionRectStyle(e: MouseEvent) {
         resetSelectionRectStyle()
         return
     }
+    // aux dom
     const container = props.parentEl?.parentElement
     if (!container) return
-    const { x: pX, y: pY } = container.getBoundingClientRect()
-    const { rect } = positionObj
+    // 容器偏移量
+    const { x: offsetX, y: offsetY } = container.getBoundingClientRect()
+    // 视窗偏移量
     const d_x = e.pageX - e.clientX
     const d_y = e.pageY - e.clientY
-    const left = d_x + rect.left - pX
-    const top = d_y + rect.top - pY
+    // 选中框
+    const selectBox = {
+        left: Infinity,
+        top: Infinity,
+        width: 0,
+        height: 0,
+    }
+    let selectedDoms: (Element | null)[]
+    console.log('isDragEnd', isDragEnd);
+    
+    if (isDragEnd) {
+        // 拖拽
+        if (!targetNode) {
+            resetSelectionRectStyle()
+            return
+        }
+        // TODO 选中拖拽节点
+        const isContainerEdge = cursorAtContainerEdge(positionObj.rect, e)
+        // 获取所有拖拽节点对应的dom
+        // 如果是放入容器，在容器内计算最大矩形
+        if (targetNode?.droppable && !isContainerEdge) {
+            // 在可放置的容器内
+            selectedDoms = selectNodes.value.map(node => {
+                return positionObj.targetEl.querySelector(`[${DTD_BASE_KEY}="${node.dragId}"]`)
+            })
+        } else {
+            // 如果不是放入容器，计算所有拖拽节点父级dom的最大矩形
+            const parentDtdDom = positionObj.targetEl.parentElement?.closest(`[${DTD_BASE_KEY}]`)
+            if (!parentDtdDom) return
+            selectedDoms = selectNodes.value.map(node => {
+                return parentDtdDom.querySelector(`[${DTD_BASE_KEY}="${node.dragId}"]`)
+            })
+        }
+        // 计算所有拖拽节点对应的dom的最大矩形
+        if (!selectedDoms?.length) return
+        const maxRect = getBoundingRects(selectedDoms)
+        if (!maxRect) return
+        selectBox.left = maxRect.left
+        selectBox.top = maxRect.top
+        selectBox.width = maxRect.width
+        selectBox.height = maxRect.height
+    } else {
+         // 单选
+        const { rect } = positionObj
+        const left = d_x + rect.left
+        const top = d_y + rect.top
+        selectBox.left = left
+        selectBox.top = top
+        selectBox.width = rect.width
+        selectBox.height = rect.height
+    }
+    selectBox.left -= offsetX
+    selectBox.top -= offsetY
     selectionStyle.value = {
-        transform: `perspective(1px) translate3d(${left}px,${top}px,0px)`,
-        width: rect.width + 'px',
-        height: rect.height + 'px',
+        transform: `perspective(1px) translate3d(${selectBox.left}px,${selectBox.top}px,0px)`,
+        width: selectBox.width + 'px',
+        height: selectBox.height + 'px',
         borderWidth: '2px',
     }
 }

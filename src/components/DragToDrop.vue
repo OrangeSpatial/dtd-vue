@@ -45,7 +45,6 @@ function init() {
   const root = DtdNode.fromList(props.data || [])
   root.dragType = props.dragType
   dtdData.value = root
-  console.log('init', dtdData.value);
 }
 
 init()

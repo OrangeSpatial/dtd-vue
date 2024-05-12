@@ -27,16 +27,16 @@ function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {
     if (!targetNode || !sourceNode.length || !positionObj || !mouse.dragElement) return
     const parentNode = sourceNode.find(node => node.isParentOf(targetNode))
     if (parentNode) return
-    // COPY 拖拽不允许插入到容器内
+    // COPY组 拖拽不允许插入到容器内
     if (targetNode.root.dragType === DragNodeType.COPY) return
     const dragType = sourceNode[0].root.dragType
     const isContainerEdge = cursorAtContainerEdge(positionObj.rect, e)
     const isVertical = getLayoutNodeInContainer(positionObj.targetEl) === NodeLayout.VERTICAL
-    const insertBefore = isVertical ? positionObj.insertBefore : positionObj.isLeft
+    const insertBefore = isVertical ? positionObj.insertBefore || positionObj.isTop : positionObj.isLeft
     if (targetNode?.droppable && !isContainerEdge) {
-        insertNodeInContainer(targetNode, sourceNode, insertBefore, dragType)
+        insertNodeInContainer(targetNode, sourceNode, insertBefore, dragType, e, mouse)
     } else {
-        insertNode(targetNode, sourceNode, isVertical ? positionObj.isTop : positionObj.isLeft, dragType)
+        insertNode(targetNode, sourceNode, insertBefore, dragType, e, mouse)
     }
 }
 

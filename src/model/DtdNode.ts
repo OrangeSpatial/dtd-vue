@@ -1,5 +1,5 @@
 import { uid } from '../common/uid.ts';
-import { DragNodeType } from './Mouse.ts'
+import { DragNodeType, Mouse } from './Mouse.ts'
 
 interface IDtdNode {
   dragId?: string;
@@ -121,24 +121,33 @@ export function deleteNode(node: DtdNode | DtdNode[]) {
  * @param insertBefore
  * @param type
  */
-export function insertNode(targetNode: DtdNode, sourceNode: DtdNode[], insertBefore: boolean, type: DragNodeType) {
+export function insertNode(
+  targetNode: DtdNode,
+  sourceNode: DtdNode[],
+  insertBefore: boolean,
+  type: DragNodeType,
+  e: MouseEvent,
+  mouse: Mouse
+) {
   if (!targetNode || !sourceNode) return;
   const parent = targetNode.parent || targetNode;
   if (type === DragNodeType.MOVE) {
     // 删除原节点
     deleteNode(sourceNode);
   }
+  const insertNodes = sourceNode.map(node => {
+    node.parent = parent;
+    // 如果是copy
+    if (type === DragNodeType.COPY) {
+      node = new DtdNode({ ...node, dragId: '' }, parent);
+    }
+    return node;
+  });
+  mouse.selectedNodes = insertNodes.map(node => ({ node, e }));
   parent.children.splice(
     parent.children.findIndex(node => targetNode.dragId === node.dragId) + (insertBefore ? 0 : 1),
     0,
-    ...sourceNode.map(node =>{
-      node.parent = parent;
-      // 如果是copy
-      if (type === DragNodeType.COPY) {
-        node = new DtdNode({ ...node, dragId: '' }, parent);
-      }
-      return node;
-    })
+    ...insertNodes
   );
 }
 
@@ -150,20 +159,28 @@ export function insertNode(targetNode: DtdNode, sourceNode: DtdNode[], insertBef
  * @param type 
  * @returns 
  */
-export function insertNodeInContainer(targetNode: DtdNode, sourceNode: DtdNode[], insertBefore: boolean, type: DragNodeType) {
+export function insertNodeInContainer(
+  targetNode: DtdNode,
+  sourceNode: DtdNode[],
+  insertBefore: boolean,
+  type: DragNodeType,
+  e: MouseEvent,
+  mouse: Mouse
+) {
   if (!targetNode || !sourceNode) return;
   if (type === DragNodeType.MOVE) {
     // 删除原节点
     deleteNode(sourceNode);
   }
-  const newNodes = sourceNode.map(node => {
+  const insertNodes = sourceNode.map(node => {
     node.parent = targetNode;
     if (type === DragNodeType.COPY) {
       node = new DtdNode({ ...node, dragId: '' }, targetNode);
     }
     return node;
   })
-  insertBefore ? targetNode.children.unshift(...newNodes) : targetNode.children.push(...newNodes);
+  mouse.selectedNodes = insertNodes.map(node => ({ node, e }));
+  insertBefore ? targetNode.children.unshift(...insertNodes) : targetNode.children.push(...insertNodes);
 }
 
 export function getNode(dragId: string) {
