@@ -9,30 +9,19 @@ defineOptions({
 const props = withDefaults(
   defineProps<{
     node: DtdNode;
-    nodeKey?: string;
     nodeClass?: string;
   }>(),
   {}
 );
-
-const itemKey = (item: DtdNode) => {
-  return props.nodeKey && item.props?.[props.nodeKey] || item.dragId;
-};
-
-function selectNode(e: Event, node: DtdNode) {
-  e.stopPropagation();
-  console.log(node);
-}
 </script>
 
 <template>
   <dtd-item
     :class="nodeClass ? nodeClass : ''"
     v-for="n in node.children"
-    :key="itemKey(n)"
+    :key="n.dragId"
     :data="n"
     :disabled="n.disabled"
-    @click="e => selectNode(e, n)"
   >
     <slot :item="n"></slot>
     <DtdRecursion :nodeClass v-if="n.children?.length" :node="n">

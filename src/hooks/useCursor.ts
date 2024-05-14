@@ -1,10 +1,11 @@
+import { Keyboard } from '../model/Keyboard.ts'
 import { Mouse } from '../model/Mouse.ts'
-import { DtdNode } from '../model/DtdNode.ts'
 import { onBeforeUnmount, onMounted } from 'vue'
 
-export function useCursor(node?: DtdNode) {
+export function useCursor(keyboard: Keyboard) {
   const mouse = new Mouse()
-  node && mouse.setNode(node)
+
+  mouse.keyboard = keyboard
 
   onMounted(() => {
     document.addEventListener('mousedown', mouse.down)

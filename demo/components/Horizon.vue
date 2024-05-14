@@ -35,22 +35,21 @@ const data = ref([
 <template>
   <div style="padding: 24px;">
     <dtd-pod>
-        <div>
-          <DragToDrop nodeClass="node-class" class="dtd-root flex" v-model="data">
-              <template #default="{ item }">
-                  <div class="dtd-item">{{ item.props?.name }}</div>
-              </template>
-          </DragToDrop>
-        </div>
+      <div>
+        <DragToDrop nodeClass="node-class" class="dtd-root flex" :data="data" @change="d => data = d">
+          <template #default="{ item }">
+            <div class="dtd-item">{{ item.props?.name }}</div>
+          </template>
+        </DragToDrop>
+      </div>
       <template #ghost="{ item }">
         <div class="ghost-custom">{{ item?.name }}</div>
       </template>
     </dtd-pod>
   </div>
-  
+
   <div class="title">渲染数据：</div>
   <div class="code">
     <pre>{{ data }}</pre>
   </div>
 </template>
-

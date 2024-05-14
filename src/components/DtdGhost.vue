@@ -17,7 +17,7 @@ onMounted(() => {
 <style scoped>
 .dtd-ghost {
   transform: perspective(1px) translateZ(0);
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   height: 0;

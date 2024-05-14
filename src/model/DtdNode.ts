@@ -1,5 +1,5 @@
 import { uid } from '../common/uid.ts';
-import { DragNodeType } from './Mouse.ts'
+import { DragNodeType, Mouse } from './Mouse.ts'
 
 interface IDtdNode {
   dragId?: string;
@@ -61,7 +61,10 @@ export class DtdNode {
       this.children = (node?.children || []).map((child) => new DtdNode(child, this));
     }
     TreeNodes.set(this.dragId, this);
-    console.log(this.dragId, TreeNodes.size, TreeNodes.get(this.dragId)?.props?.name);
+  }
+
+  clone() {
+    return new DtdNode(DtdNode.getIDtdNode(this), this.parent);
   }
 
   static fromList(list: IDtdNode[]) {
@@ -76,6 +79,16 @@ export class DtdNode {
         children
       };
     });
+  }
+
+  static getIDtdNode(node: DtdNode): IDtdNode {
+    return {
+      dragId: node.dragId,
+      droppable: node.droppable,
+      dragType: node.dragType,
+      props: node.props,
+      children: node.children.map((child) => DtdNode.getIDtdNode(child))
+    };
   }
 
   static deleteCache(root: DtdNode) {
@@ -93,56 +106,84 @@ export class DtdNode {
   }
 }
 
+function deleteNodeFromParentByDragId(parent: DtdNode, dragId: string) {
+  parent.children = parent.children.filter((child) => child.dragId !== dragId);
+}
 
-export function deleteNode(node: DtdNode | DtdNode[]) {
+export function deleteNode(node: DtdNode | DtdNode[], deleteCache = false) {
   if (!node) return;
   if (Array.isArray(node)) {
     node.forEach((n) => deleteNode(n));
     return;
   }
   const parent = node.parent || node;
-  parent.children = parent.children.filter((child) => child !== node);
-  TreeNodes.delete(node.dragId);
+  deleteNodeFromParentByDragId(parent, node.dragId)
+  if (deleteCache) {
+    TreeNodes.delete(node.dragId);
+  }
 }
 
 /**
  * 插入到指定位置
  * @param targetNode 被插入节点
- * @param sourceNode 待插入节点
+ * @param sourceNodes 待插入节点
  * @param insertBefore
  * @param type
  */
-export function insertNode(targetNode: DtdNode, sourceNode: DtdNode[], insertBefore: boolean, type: DragNodeType) {
-  if (!targetNode || !sourceNode) return;
+export function insertNode(
+  targetNode: DtdNode,
+  sourceNodes: DtdNode[],
+  insertBefore: boolean,
+  type: DragNodeType
+) {
+  if (!targetNode || !sourceNodes) return;
   const parent = targetNode.parent || targetNode;
-  parent.children.splice(
-    parent.children.indexOf(targetNode) + (insertBefore ? 0 : 1),
-    0,
-    ...sourceNode.map(node => new DtdNode({ ...node, dragId: '' }, parent))
-  );
-
   if (type === DragNodeType.MOVE) {
     // 删除原节点
-    deleteNode(sourceNode);
+    deleteNode(sourceNodes);
   }
+  const insertNodes = sourceNodes.map(node => {
+    node.parent = parent;
+    // 如果是copy
+    if (type === DragNodeType.COPY) {
+      node = new DtdNode({ ...node, dragId: '' }, parent);
+    }
+    return node;
+  });
+  parent.children.splice(
+    parent.children.findIndex(node => targetNode.dragId === node.dragId) + (insertBefore ? 0 : 1),
+    0,
+    ...insertNodes
+  );
 }
 
 /**
  * 插入到容器
  * @param targetNode 
- * @param sourceNode 
+ * @param sourceNodes 
  * @param insertBefore 
  * @param type 
  * @returns 
  */
-export function insertNodeInContainer(targetNode: DtdNode, sourceNode: DtdNode[], insertBefore: boolean, type: DragNodeType) {
-  if (!targetNode || !sourceNode) return;
-  const newNodes = sourceNode.map(node => new DtdNode({ ...node, dragId: '' }, targetNode))
-  insertBefore ? targetNode.children.unshift(...newNodes) : targetNode.children.push(...newNodes);
+export function insertNodeInContainer(
+  targetNode: DtdNode,
+  sourceNodes: DtdNode[],
+  insertBefore: boolean,
+  type: DragNodeType
+) {
+  if (!targetNode || !sourceNodes) return;
   if (type === DragNodeType.MOVE) {
     // 删除原节点
-    deleteNode(sourceNode);
+    deleteNode(sourceNodes);
   }
+  const insertNodes = sourceNodes.map(node => {
+    node.parent = targetNode;
+    if (type === DragNodeType.COPY) {
+      node = new DtdNode({ ...node, dragId: '' }, targetNode);
+    }
+    return node;
+  })
+  insertBefore ? targetNode.children.unshift(...insertNodes) : targetNode.children.push(...insertNodes);
 }
 
 export function getNode(dragId: string) {

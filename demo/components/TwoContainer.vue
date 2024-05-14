@@ -37,14 +37,14 @@ const data1 = ref([
     <dtd-pod>
         <div class="container">
             <div class="left">
-                <DragToDrop drag-type="copy" nodeClass="node-class" class="dtd-root" v-model="data">
+                <DragToDrop drag-type="copy" nodeClass="node-class" class="dtd-root" :data="data" @change="d => data = d">
                     <template #default="{ item }">
                         <div class="dtd-item">{{ item.props?.name }}</div>
                     </template>
                 </DragToDrop>
             </div>
             <div class="right">
-                <DragToDrop nodeClass="node-class" class="dtd-root" v-model="data1">
+                <DragToDrop nodeClass="node-class" class="dtd-root" :data="data1" @change="d => data1 = d">
                     <template #default="{ item }">
                         <div class="dtd-item">{{ item.props?.name }}</div>
                     </template>

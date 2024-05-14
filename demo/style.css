@@ -45,6 +45,10 @@ pre {
     gap: 10px;
 }
 
+.flex-1 {
+    flex: 1;
+}
+
 .dtd-item {
     padding: 10px;
     background-color: white;

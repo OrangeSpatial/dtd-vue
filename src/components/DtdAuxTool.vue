@@ -5,6 +5,7 @@ import { DtdNode, NodeLayout } from '../model/DtdNode.ts'
 import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts'
 import { initStyle } from '../common/presets.ts'
 import { DTD_MOUSE } from '../common/injectSymbol.ts'
+import AuxSelection from './selection/Index.vue'
 
 withDefaults(defineProps<{
   insertionBgColor?: string
@@ -18,6 +19,8 @@ const draggingCoverRectStyle = ref<CSSProperties>(initStyle)
 
 const droppingCoverRectStyle = ref<CSSProperties>(initStyle)
 
+const auxToolRef = ref<HTMLElement>()
+
 const mouse = inject<Mouse>(DTD_MOUSE)
 if (!mouse) {
   throw new Error('DtdAuxTool: mouse is required')
@@ -27,12 +30,15 @@ const currentTargetNode = ref<DtdNode>()
 function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
 
   const positionObj = getCursorPositionInDtdNode(e)
-  if (!positionObj || !targetNode || targetNode.root.dragType === DragNodeType.COPY) {
+  if (!positionObj || !targetNode || !auxToolRef.value || targetNode.root.dragType === DragNodeType.COPY) {
     resetInsertionStyle()
     resetDraggingCoverRectStyle()
     resetDroppingCoverRectStyle()
     return
   }
+  const container = auxToolRef.value.parentElement
+  if (!container) return
+  const { x: pX, y: pY } = container.getBoundingClientRect()
   const sourceNode = mouse?.dataTransfer
   if (!sourceNode?.length) return
   const parentNode = sourceNode.find(node => node.isParentOf(targetNode))
@@ -41,8 +47,9 @@ function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
   const isVertical = getLayoutNodeInContainer(positionObj.targetEl) === NodeLayout.VERTICAL
   const d_x = e.pageX - e.clientX
   const d_y = e.pageY - e.clientY
-  const left = d_x + rect.left
-  const top = d_y + rect.top
+  const left = d_x + rect.left - pX
+  const top = d_y + rect.top - pY
+  
   const x = isVertical ? left : isLeft ? left : left + rect.width
   const y = isVertical ? isTop ? top : top + rect.height : top
   if (targetNode.droppable && !cursorAtContainerEdge(rect, e)) {
@@ -56,7 +63,7 @@ function draggingHandler(e: MouseEvent, targetNode?: DtdNode) {
 
   // same source should be a draggingCoverRect
   if (targetNode.root === mouse?.dataTransfer?.[0]?.root) {
-    updateDraggingCoverRectStyle(d_x, d_y)
+    updateDraggingCoverRectStyle(d_x, d_y, pX, pY)
   } else {
     resetDraggingCoverRectStyle()
   }
@@ -70,11 +77,11 @@ function updateInsertionStyle(rect: DOMRect, x: number, y: number, vertical: boo
   }
 }
 
-function updateDraggingCoverRectStyle(dx: number, dy: number) {
+function updateDraggingCoverRectStyle(dx: number, dy: number, pX: number, pY: number) {
   const dragRect = mouse?.dragElement?.getBoundingClientRect()
   if (dragRect) {
     draggingCoverRectStyle.value = {
-      transform: `perspective(1px) translate3d(${dx + dragRect.left}px,${dy + dragRect.top}px,0px)`,
+      transform: `perspective(1px) translate3d(${dx + dragRect.left - pX}px,${dy + dragRect.top - pY}px,0px)`,
       width: dragRect.width + 'px',
       height: dragRect.height + 'px'
     }
@@ -93,6 +100,8 @@ function resetInsertionStyle() {
   insertionStyle.value = {
     top: 0,
     left: 0,
+    height: 0,
+    width: 0,
     transform: `perspective(1px) translate3d(0px,0px,0px)`,
   }
 }
@@ -124,12 +133,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="dtd-aux-tool">
+  <div class="dtd-aux-tool" ref="auxToolRef">
     <div class="dtd-aux-insertion"
       :style="{...insertionStyle, backgroundColor: insertionBgColor}"
     ></div>
     <div class="dtd-aux-dashed-box"></div>
-    <div class="dtd-aux-selection-box"></div>
+    <aux-selection :parentEl="auxToolRef"/>
     <div v-if="mouse?.dataTransfer.length" class="dtd-aux-cover-rect dragging" :style="draggingCoverRectStyle"></div>
     <div v-if="currentTargetNode?.droppable" class="dtd-aux-cover-rect dropping" :style="droppingCoverRectStyle"></div>
   </div>
@@ -141,6 +150,8 @@ onBeforeUnmount(() => {
   position: absolute;
   top: 0;
   left: 0;
+  bottom: 0;
+  right: 0;
   pointer-events: none;
   z-index: 2;
 }
