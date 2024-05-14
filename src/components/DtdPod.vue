@@ -7,6 +7,7 @@ import { onBeforeUnmount, ref, provide, onMounted, CSSProperties } from 'vue';
 import { DragEventType, DragNodeType } from '../model/Mouse.ts';
 import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts';
 import { DTD_MOUSE } from '../common/injectSymbol.ts'
+import { useKeyboard } from '../hooks/useKeyboard.ts';
 
 defineOptions({
     name: 'DtdPod',
@@ -21,7 +22,9 @@ const podStyle = ref<CSSProperties>({
     transform: 'translate(0, 0)',
 })
 
-const { mouse } = useCursor()
+const { keyboard } = useKeyboard()
+const { mouse } = useCursor(keyboard)
+
 provide(DTD_MOUSE, mouse)
 mouse.on(DragEventType.DragEnd, dragEndHandler)
 function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {

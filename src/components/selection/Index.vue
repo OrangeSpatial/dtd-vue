@@ -3,7 +3,7 @@ import { CSSProperties, inject, nextTick, onBeforeUnmount, onMounted, ref } from
 import { DTD_BASE_KEY, initStyle } from '../../common/presets';
 import { DragEventType, Mouse } from '../../model/Mouse';
 import { DTD_MOUSE } from '../../common/injectSymbol';
-import { DtdNode, NodeLayout } from '../../model/DtdNode';
+import { DtdNode } from '../../model/DtdNode';
 import { cursorAtContainerEdge, getBoundingRects, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../../common/dtdHelper';
 
 
@@ -79,26 +79,30 @@ function updateSelectionRectStyle(e: MouseEvent, targetNode?: DtdNode, isDragEnd
                 return parentDtdDom.querySelector(`[${DTD_BASE_KEY}="${node.dragId}"]`)
             })
         }
-        // 计算所有拖拽节点对应的dom的最大矩形
-        if (!selectedDoms?.length) return
-        const maxRect = getBoundingRects(selectedDoms)
-        if (!maxRect) return
-        selectBox.left = maxRect.left
-        selectBox.top = maxRect.top
-        selectBox.width = maxRect.width
-        selectBox.height = maxRect.height
     } else {
+        selectedDoms = selectNodes.value.map(node => {
+            return container.querySelector(`[${DTD_BASE_KEY}="${node.dragId}"]`)
+        })
          // 单选
-        const { rect } = positionObj
-        const left = d_x + rect.left
-        const top = d_y + rect.top
-        selectBox.left = left
-        selectBox.top = top
-        selectBox.width = rect.width
-        selectBox.height = rect.height
+        // const { rect } = positionObj
+        // const left = d_x + rect.left
+        // const top = d_y + rect.top
+        // selectBox.left = left
+        // selectBox.top = top
+        // selectBox.width = rect.width
+        // selectBox.height = rect.height
     }
-    selectBox.left -= offsetX
-    selectBox.top -= offsetY
+    // 计算所有拖拽节点对应的dom的最大矩形
+    if (!selectedDoms?.length) return
+    const maxRect = getBoundingRects(selectedDoms)
+    if (!maxRect) return
+    selectBox.left = maxRect.left - offsetX
+    selectBox.top = maxRect.top - offsetY
+    selectBox.width = maxRect.width
+    selectBox.height = maxRect.height
+
+    // selectBox.left -= offsetX
+    // selectBox.top -= offsetY
     selectionStyle.value = {
         transform: `perspective(1px) translate3d(${selectBox.left}px,${selectBox.top}px,0px)`,
         width: selectBox.width + 'px',

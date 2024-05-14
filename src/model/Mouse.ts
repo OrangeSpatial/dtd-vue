@@ -2,6 +2,7 @@ import { DtdNode, getNode } from './DtdNode.ts'
 import { getClosestDtdNode, removeGhostElStyle, setMoveElStyle } from '../common/dtdHelper.ts'
 import { isValidNumber } from '../common/types.ts'
 import { DTD_BASE_KEY } from '../common/presets.ts'
+import { Keyboard } from './Keyboard.ts'
 
 export enum CursorStatus {
   Normal = 'NORMAL',
@@ -93,12 +94,16 @@ export class Mouse {
 
   selectedNodes: ISelectNode[] = []
 
+  keyboard: Keyboard | null = null
+
   constructor() {
   }
 
   public setSelectedNodes(nodes: ISelectNode[], e: MouseEvent, targetNode?: DtdNode): void {
     if (!nodes || !Array.isArray(nodes)) return;
     this.selectedNodes = nodes;
+    console.log('selectedNodes', this.selectedNodes);
+    // TODO    排序
     this.eventCallbacks.get(DragEventType.Select)?.forEach((cb) => {
       cb(e, targetNode);
     });
@@ -190,7 +195,12 @@ export class Mouse {
         setCursorStyle(window, CursorDragType.Copy);
       }
       if (node) {
-        if(!this.dataTransfer.includes(node)) this.dataTransfer = [node];
+        // 如果node在选中的节点里面，在携带选中的所有节点
+        if (this.selectedNodes.find((item) => item.node === node)) {
+          this.dataTransfer = this.selectedNodes.map((item) => item.node);
+        } else if(!this.dataTransfer.includes(node)) {
+          this.dataTransfer = [node];
+        }
         this.eventCallbacks.get(DragEventType.DragStart)?.forEach((cb) => {
           cb(e, node);
         });
@@ -261,7 +271,15 @@ export class Mouse {
       const dragId = getClosestDtdNode(e)?.getAttribute(DTD_BASE_KEY) as string;
       const targetNode = getNode(dragId);
       if (targetNode && targetNode.root.dragType !== DragNodeType.COPY) {
-        this.setSelectedNodes([{ node: targetNode, e }], e);
+        if (!this.keyboard?.isSelecting()) {
+          this.setSelectedNodes([{ node: targetNode, e }], e);
+        } else if (!this.selectedNodes.find((item) => item.node === targetNode)) {
+          // 存在的不能重复添加
+          this.setSelectedNodes([
+            ...this.selectedNodes,
+            { node: targetNode, e }
+          ], e);
+        }
       }
       this.eventCallbacks.get(DragEventType.Click)?.forEach((cb) => {
         cb(e, targetNode);
