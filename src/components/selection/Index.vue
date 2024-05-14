@@ -16,7 +16,7 @@ const props = defineProps<{
 }>()
 
 
-const selectionStyle = ref<CSSProperties>(initStyle)
+const selectionStyles = ref<CSSProperties[]>([])
 const selectNodes = ref<DtdNode[]>([])
 const mouse = inject<Mouse>(DTD_MOUSE)
 if (!mouse) {
@@ -50,15 +50,8 @@ function updateSelectionRectStyle(e: MouseEvent, targetNode?: DtdNode, isDragEnd
     // 视窗偏移量
     const d_x = e.pageX - e.clientX
     const d_y = e.pageY - e.clientY
-    // 选中框
-    const selectBox = {
-        left: Infinity,
-        top: Infinity,
-        width: 0,
-        height: 0,
-    }
+    // 节点对应的dom
     let selectedDoms: (Element | null)[]
-    console.log('isDragEnd', isDragEnd);
     
     if (isDragEnd) {
         // 拖拽
@@ -83,35 +76,27 @@ function updateSelectionRectStyle(e: MouseEvent, targetNode?: DtdNode, isDragEnd
         selectedDoms = selectNodes.value.map(node => {
             return container.querySelector(`[${DTD_BASE_KEY}="${node.dragId}"]`)
         })
-         // 单选
-        // const { rect } = positionObj
-        // const left = d_x + rect.left
-        // const top = d_y + rect.top
-        // selectBox.left = left
-        // selectBox.top = top
-        // selectBox.width = rect.width
-        // selectBox.height = rect.height
     }
     // 计算所有拖拽节点对应的dom的最大矩形
     if (!selectedDoms?.length) return
-    const maxRect = getBoundingRects(selectedDoms)
-    if (!maxRect) return
-    selectBox.left = maxRect.left - offsetX
-    selectBox.top = maxRect.top - offsetY
-    selectBox.width = maxRect.width
-    selectBox.height = maxRect.height
-
-    // selectBox.left -= offsetX
-    // selectBox.top -= offsetY
-    selectionStyle.value = {
-        transform: `perspective(1px) translate3d(${selectBox.left}px,${selectBox.top}px,0px)`,
-        width: selectBox.width + 'px',
-        height: selectBox.height + 'px',
-        borderWidth: '2px',
-    }
+    selectionStyles.value = []
+    selectedDoms.map(dom => {
+        const rect = dom?.getBoundingClientRect()
+        if (!rect) return
+        const left = rect.left - offsetX
+        const top = rect.top - offsetY
+        const width = rect.width
+        const height = rect.height
+        selectionStyles.value.push({
+            transform: `perspective(1px) translate3d(${left}px,${top}px,0px)`,
+            width: width + 'px',
+            height: height + 'px',
+            borderWidth: '2px',
+        })
+    })
 }
 function resetSelectionRectStyle() {
-    selectionStyle.value = initStyle
+    selectionStyles.value = []
 }
 onMounted(() => {
     mouse.on(DragEventType.Select, selectHandler)
@@ -122,7 +107,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div v-for="node in selectNodes" :key="node.dragId" class="dtd-aux-selection-box" :style="selectionStyle"></div>
+    <div v-for="(node, index) in selectNodes" :key="node.dragId" class="dtd-aux-selection-box" :style="selectionStyles[index]"></div>
 </template>
 
 <style scoped>

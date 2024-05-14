@@ -63,6 +63,10 @@ export class DtdNode {
     TreeNodes.set(this.dragId, this);
   }
 
+  clone() {
+    return new DtdNode(DtdNode.getIDtdNode(this), this.parent);
+  }
+
   static fromList(list: IDtdNode[]) {
     return new DtdNode({ children: list });
   }
@@ -102,40 +106,43 @@ export class DtdNode {
   }
 }
 
+function deleteNodeFromParentByDragId(parent: DtdNode, dragId: string) {
+  parent.children = parent.children.filter((child) => child.dragId !== dragId);
+}
 
-export function deleteNode(node: DtdNode | DtdNode[]) {
+export function deleteNode(node: DtdNode | DtdNode[], deleteCache = false) {
   if (!node) return;
   if (Array.isArray(node)) {
     node.forEach((n) => deleteNode(n));
     return;
   }
   const parent = node.parent || node;
-  parent.children = parent.children.filter((child) => child.dragId !== node.dragId);
-  TreeNodes.delete(node.dragId);
+  deleteNodeFromParentByDragId(parent, node.dragId)
+  if (deleteCache) {
+    TreeNodes.delete(node.dragId);
+  }
 }
 
 /**
  * 插入到指定位置
  * @param targetNode 被插入节点
- * @param sourceNode 待插入节点
+ * @param sourceNodes 待插入节点
  * @param insertBefore
  * @param type
  */
 export function insertNode(
   targetNode: DtdNode,
-  sourceNode: DtdNode[],
+  sourceNodes: DtdNode[],
   insertBefore: boolean,
-  type: DragNodeType,
-  e: MouseEvent,
-  mouse: Mouse
+  type: DragNodeType
 ) {
-  if (!targetNode || !sourceNode) return;
+  if (!targetNode || !sourceNodes) return;
   const parent = targetNode.parent || targetNode;
   if (type === DragNodeType.MOVE) {
     // 删除原节点
-    deleteNode(sourceNode);
+    deleteNode(sourceNodes);
   }
-  const insertNodes = sourceNode.map(node => {
+  const insertNodes = sourceNodes.map(node => {
     node.parent = parent;
     // 如果是copy
     if (type === DragNodeType.COPY) {
@@ -143,7 +150,6 @@ export function insertNode(
     }
     return node;
   });
-  mouse.setSelectedNodes(insertNodes.map(node => ({ node, e })), e, targetNode);
   parent.children.splice(
     parent.children.findIndex(node => targetNode.dragId === node.dragId) + (insertBefore ? 0 : 1),
     0,
@@ -154,32 +160,29 @@ export function insertNode(
 /**
  * 插入到容器
  * @param targetNode 
- * @param sourceNode 
+ * @param sourceNodes 
  * @param insertBefore 
  * @param type 
  * @returns 
  */
 export function insertNodeInContainer(
   targetNode: DtdNode,
-  sourceNode: DtdNode[],
+  sourceNodes: DtdNode[],
   insertBefore: boolean,
-  type: DragNodeType,
-  e: MouseEvent,
-  mouse: Mouse
+  type: DragNodeType
 ) {
-  if (!targetNode || !sourceNode) return;
+  if (!targetNode || !sourceNodes) return;
   if (type === DragNodeType.MOVE) {
     // 删除原节点
-    deleteNode(sourceNode);
+    deleteNode(sourceNodes);
   }
-  const insertNodes = sourceNode.map(node => {
+  const insertNodes = sourceNodes.map(node => {
     node.parent = targetNode;
     if (type === DragNodeType.COPY) {
       node = new DtdNode({ ...node, dragId: '' }, targetNode);
     }
     return node;
   })
-  mouse.setSelectedNodes(insertNodes.map(node => ({ node, e })), e, targetNode);
   insertBefore ? targetNode.children.unshift(...insertNodes) : targetNode.children.push(...insertNodes);
 }
 

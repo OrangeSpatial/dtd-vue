@@ -80,3 +80,13 @@ export function getBoundingRects(els: (Element | null)[]) {
     height: bottom - top
   }
 }
+
+/**
+ * 根据多个mouseEvent排序
+ */
+export function sortMouseEvents(e1: MouseEvent, e2: MouseEvent) {
+  const rect1 = (e1.target as Element).getBoundingClientRect()
+  const rect2 = (e2.target as Element).getBoundingClientRect()
+  if ((rect1.x - rect2.x) >= 0 && (rect1.y - rect2.y) >= 0) return 1
+  return -1
+}

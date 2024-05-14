@@ -41,9 +41,9 @@ function dragEndHandler(e: MouseEvent, targetNode?: DtdNode) {
     const isVertical = getLayoutNodeInContainer(positionObj.targetEl) === NodeLayout.VERTICAL
     const insertBefore = isVertical ? positionObj.insertBefore || positionObj.isTop : positionObj.isLeft
     if (targetNode?.droppable && !isContainerEdge) {
-        insertNodeInContainer(targetNode, sourceNode, insertBefore, dragType, e, mouse)
+        insertNodeInContainer(targetNode, sourceNode, insertBefore, dragType)
     } else {
-        insertNode(targetNode, sourceNode, insertBefore, dragType, e, mouse)
+        insertNode(targetNode, sourceNode, insertBefore, dragType)
     }
 }
 
@@ -65,7 +65,6 @@ onBeforeUnmount(() => {
 })
 
 function podScrollHandler(e: Event) {
-    console.log('scroll');
     const target = e.target as HTMLElement
     podStyle.value.transform = `translate(${target.scrollLeft}px, ${target.scrollTop}px)`
 }

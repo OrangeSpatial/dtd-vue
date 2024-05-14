@@ -2,9 +2,9 @@
 import { inject, onBeforeUnmount, ref } from 'vue'
 import DtdRecursion from './DtdRecursion.vue'
 import DtdItem from './DtdItem.vue'
-import { DtdNode } from '../model/DtdNode'
+import { DtdNode, getNode } from '../model/DtdNode'
 import { DTD_MOUSE } from '../common/injectSymbol'
-import { DragEventType, DragNodeType, Mouse } from '../model/Mouse'
+import { DragEventType, DragNodeType, ISelectNode, Mouse } from '../model/Mouse'
 
 defineOptions({
   name: 'DragToDrop',
@@ -27,7 +27,12 @@ mouse?.on(DragEventType.DragEnd, (e: MouseEvent, targetNode?: DtdNode) => {
   if (!mouse.dataTransfer.length) return
   if (targetNode && mouse.dataTransfer.find(node => node.isParentOf(targetNode))) return
   emits('change', getData())
-  dtdData.value = new DtdNode(DtdNode.getIDtdNode(dtdData.value), dtdData.value)
+  dtdData.value = dtdData.value.clone()
+  mouse.setSelectedNodes(
+    mouse.dataTransfer.map(node => ({ node: getNode(node.dragId), e } as ISelectNode)),
+    e,
+    targetNode
+  );
 })
 
 function getData() {

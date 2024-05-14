@@ -1,5 +1,5 @@
 import { DtdNode, getNode } from './DtdNode.ts'
-import { getClosestDtdNode, removeGhostElStyle, setMoveElStyle } from '../common/dtdHelper.ts'
+import { getClosestDtdNode, removeGhostElStyle, setMoveElStyle, sortMouseEvents } from '../common/dtdHelper.ts'
 import { isValidNumber } from '../common/types.ts'
 import { DTD_BASE_KEY } from '../common/presets.ts'
 import { Keyboard } from './Keyboard.ts'
@@ -101,9 +101,9 @@ export class Mouse {
 
   public setSelectedNodes(nodes: ISelectNode[], e: MouseEvent, targetNode?: DtdNode): void {
     if (!nodes || !Array.isArray(nodes)) return;
-    this.selectedNodes = nodes;
-    console.log('selectedNodes', this.selectedNodes);
-    // TODO    排序
+    this.selectedNodes = nodes.sort((a, b) => {
+      return sortMouseEvents(a.e, b.e);
+    });
     this.eventCallbacks.get(DragEventType.Select)?.forEach((cb) => {
       cb(e, targetNode);
     });
@@ -195,8 +195,8 @@ export class Mouse {
         setCursorStyle(window, CursorDragType.Copy);
       }
       if (node) {
-        // 如果node在选中的节点里面，在携带选中的所有节点
-        if (this.selectedNodes.find((item) => item.node === node)) {
+        // 如果node在选中的节点里面，携带选中的所有节点
+        if (this.selectedNodes.find((item) => item.node.dragId === node.dragId)) {
           this.dataTransfer = this.selectedNodes.map((item) => item.node);
         } else if(!this.dataTransfer.includes(node)) {
           this.dataTransfer = [node];
@@ -273,7 +273,7 @@ export class Mouse {
       if (targetNode && targetNode.root.dragType !== DragNodeType.COPY) {
         if (!this.keyboard?.isSelecting()) {
           this.setSelectedNodes([{ node: targetNode, e }], e);
-        } else if (!this.selectedNodes.find((item) => item.node === targetNode)) {
+        } else {
           // 存在的不能重复添加
           this.setSelectedNodes([
             ...this.selectedNodes,
