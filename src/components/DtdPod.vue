@@ -18,9 +18,6 @@ const emits = defineEmits<{
 }>()
 
 const podRef = ref<HTMLElement>()
-const podStyle = ref<CSSProperties>({
-    transform: 'translate(0, 0)',
-})
 
 const { keyboard } = useKeyboard()
 const { mouse } = useCursor(keyboard)
@@ -57,6 +54,7 @@ function ghostMounted(el: HTMLElement) {
     mouse.setGhostElement(el)
 }
 
+const scrollPosition = ref({ scrollTop: 0, scrollLeft: 0 })
 onBeforeUnmount(() => {
     mouse.off(DragEventType.DragEnd, dragEndHandler)
     if (podRef.value) {
@@ -66,7 +64,10 @@ onBeforeUnmount(() => {
 
 function podScrollHandler(e: Event) {
     const target = e.target as HTMLElement
-    podStyle.value.transform = `translate(${target.scrollLeft}px, ${target.scrollTop}px)`
+    scrollPosition.value = {
+        scrollTop: target.scrollTop,
+        scrollLeft: target.scrollLeft
+    }
 }
 
 function selectHandler() {
@@ -83,13 +84,16 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     mouse.off(DragEventType.Select, selectHandler)
+    if (podRef.value) {
+        podRef.value.removeEventListener('scroll', podScrollHandler)
+    }
 })
 </script>
 
 <template>
     <div ref="podRef" class="dtd-pod">
         <slot></slot>
-        <dtd-aux-tool :style="podStyle"/>
+        <dtd-aux-tool :scrollPosition/>
         <dtd-ghost @mounted="ghostMounted">
             <slot name="ghost" v-if="carryNode.length" :item="carryNode[0]?.props" />
         </dtd-ghost>

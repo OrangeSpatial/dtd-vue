@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CSSProperties, inject, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { CSSProperties, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { DTD_BASE_KEY, initStyle } from '../../common/presets';
 import { DragEventType, Mouse } from '../../model/Mouse';
 import { DTD_MOUSE } from '../../common/injectSymbol';
@@ -11,13 +11,21 @@ defineOptions({
     name: 'AuxSelection',
 })
 
-const props = defineProps<{
-    parentEl?: HTMLElement
-}>()
+const props = withDefaults(defineProps<{
+    parentEl?: HTMLElement;
+    scrollPosition: { scrollTop: number, scrollLeft: number };
+}>(), {
+    scrollPosition: () => ({ scrollTop: 0, scrollLeft: 0 })
+})
 
+const selectNodes = ref<{
+    selectionStyle: CSSProperties;
+    selectNode: DtdNode;
+    startPosition: { x: number; y: number };
+    startLeft: number;
+    startTop: number;
+}[]>([])
 
-const selectionStyles = ref<CSSProperties[]>([])
-const selectNodes = ref<DtdNode[]>([])
 const mouse = inject<Mouse>(DTD_MOUSE)
 if (!mouse) {
     throw new Error('DtdAuxTool: mouse is required')
@@ -25,14 +33,20 @@ if (!mouse) {
 function selectHandler(e: MouseEvent, targetNode?: DtdNode) {
     selectNodes.value = []
     mouse?.selectedNodes.forEach(selectNode => {
-        selectNodes.value.push(selectNode.node)
+        selectNodes.value.push({
+            selectNode: selectNode.node,
+            selectionStyle: initStyle,
+            startPosition: { x: props.scrollPosition.scrollLeft, y: props.scrollPosition.scrollTop },
+            startLeft: 0,
+            startTop: 0,
+        })
         nextTick(() => {
-            updateSelectionRectStyle(selectNode.e, targetNode, Boolean(targetNode))
+            updateSelection(selectNode.e, targetNode, Boolean(targetNode))
         })
     })
 }
 
-function updateSelectionRectStyle(e: MouseEvent, targetNode?: DtdNode, isDragEnd = false) {
+function updateSelection(e: MouseEvent, targetNode?: DtdNode, isDragEnd = false) {
     if (!e) {
         resetSelectionRectStyle()
         return
@@ -61,43 +75,62 @@ function updateSelectionRectStyle(e: MouseEvent, targetNode?: DtdNode, isDragEnd
         // 如果是放入容器，在容器内计算最大矩形
         if (targetNode?.droppable && !isContainerEdge) {
             // 在可放置的容器内
-            selectedDoms = selectNodes.value.map(node => {
-                return positionObj.targetEl.querySelector(`[${DTD_BASE_KEY}="${node.dragId}"]`)
+            selectedDoms = selectNodes.value.map(item => {
+                return positionObj.targetEl.querySelector(`[${DTD_BASE_KEY}="${item.selectNode.dragId}"]`)
             })
         } else {
             // 如果不是放入容器，计算所有拖拽节点父级dom的最大矩形
             const parentDtdDom = positionObj.targetEl.parentElement?.closest(`[${DTD_BASE_KEY}]`)
             if (!parentDtdDom) return
-            selectedDoms = selectNodes.value.map(node => {
-                return parentDtdDom.querySelector(`[${DTD_BASE_KEY}="${node.dragId}"]`)
+            selectedDoms = selectNodes.value.map(item => {
+                return parentDtdDom.querySelector(`[${DTD_BASE_KEY}="${item.selectNode.dragId}"]`)
             })
         }
     } else {
-        selectedDoms = selectNodes.value.map(node => {
-            return container.querySelector(`[${DTD_BASE_KEY}="${node.dragId}"]`)
+        selectedDoms = selectNodes.value.map(item => {
+            return container.querySelector(`[${DTD_BASE_KEY}="${item.selectNode.dragId}"]`)
         })
     }
     // 计算所有拖拽节点对应的dom的最大矩形
     if (!selectedDoms?.length) return
-    selectionStyles.value = []
-    selectedDoms.map(dom => {
+    selectedDoms.map((dom, index) => {
         const rect = dom?.getBoundingClientRect()
         if (!rect) return
         const left = rect.left - offsetX
         const top = rect.top - offsetY
         const width = rect.width
         const height = rect.height
-        selectionStyles.value.push({
-            transform: `perspective(1px) translate3d(${left}px,${top}px,0px)`,
+        selectNodes.value[index].startLeft = left
+        selectNodes.value[index].startTop = top
+        selectNodes.value[index].selectionStyle = {
+            transform: `translate3d(${left}px,${top}px,0px)`,
             width: width + 'px',
             height: height + 'px',
             borderWidth: '2px',
-        })
+        }
     })
 }
 function resetSelectionRectStyle() {
-    selectionStyles.value = []
+    selectNodes.value = []
 }
+
+function updateSelectionRectStyle() {
+    selectNodes.value.map(item => {
+        const dx = props.scrollPosition.scrollLeft - item.startPosition.x
+        const dy = props.scrollPosition.scrollTop - item.startPosition.y
+        const left = item.startLeft - dx
+        const top = item.startTop - dy
+        item.selectionStyle = {
+            ...item.selectionStyle,
+            transform: `translate3d(${left}px,${top}px,0px)`,
+        }
+    })
+}
+
+watch(() => props.scrollPosition, () => {
+    updateSelectionRectStyle()
+}, { deep: true })
+
 onMounted(() => {
     mouse.on(DragEventType.Select, selectHandler)
 })
@@ -107,7 +140,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div v-for="(node, index) in selectNodes" :key="node.dragId" class="dtd-aux-selection-box" :style="selectionStyles[index]"></div>
+    <div v-for="(item) in selectNodes" :key="item.selectNode.dragId" class="dtd-aux-selection-box" :style="item.selectionStyle"></div>
 </template>
 
 <style scoped>

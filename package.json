@@ -1,7 +1,7 @@
 {
   "name": "dtd-vue",
   "packageManager": "yarn@4.1.1",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "main": "dist/es/index.mjs",
   "module": "dist/es/index.mjs",

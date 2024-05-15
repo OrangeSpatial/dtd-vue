@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CSSProperties, inject, onBeforeUnmount, onMounted, ref } from 'vue'
+import { CSSProperties, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { DragEventType, DragNodeType, Mouse } from '../model/Mouse.ts'
 import { DtdNode, NodeLayout } from '../model/DtdNode.ts'
 import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts'
@@ -7,8 +7,9 @@ import { initStyle } from '../common/presets.ts'
 import { DTD_MOUSE } from '../common/injectSymbol.ts'
 import AuxSelection from './selection/Index.vue'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   insertionBgColor?: string
+  scrollPosition?: { scrollTop: number, scrollLeft: number }
 }>(), {
   insertionBgColor: '#1890ff'
 })
@@ -20,6 +21,15 @@ const draggingCoverRectStyle = ref<CSSProperties>(initStyle)
 const droppingCoverRectStyle = ref<CSSProperties>(initStyle)
 
 const auxToolRef = ref<HTMLElement>()
+const auxToolStyle = ref<CSSProperties>({
+    transform: 'translate(0, 0)',
+})
+
+watch(() => props.scrollPosition, (val) => {
+  auxToolStyle.value = {
+    transform: `translate(${val?.scrollLeft || 0}px, ${val?.scrollTop || 0}px)`
+  }
+})
 
 const mouse = inject<Mouse>(DTD_MOUSE)
 if (!mouse) {
@@ -133,12 +143,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="dtd-aux-tool" ref="auxToolRef">
+  <div :style="auxToolStyle" class="dtd-aux-tool" ref="auxToolRef">
     <div class="dtd-aux-insertion"
       :style="{...insertionStyle, backgroundColor: insertionBgColor}"
     ></div>
     <div class="dtd-aux-dashed-box"></div>
-    <aux-selection :parentEl="auxToolRef"/>
+    <aux-selection :scrollPosition :parentEl="auxToolRef"/>
     <div v-if="mouse?.dataTransfer.length" class="dtd-aux-cover-rect dragging" :style="draggingCoverRectStyle"></div>
     <div v-if="currentTargetNode?.droppable" class="dtd-aux-cover-rect dropping" :style="droppingCoverRectStyle"></div>
   </div>
