@@ -5,7 +5,7 @@ import DtdAuxTool from './DtdAuxTool.vue'
 import DtdGhost from './DtdGhost.vue'
 import { onBeforeUnmount, ref, provide, onMounted, CSSProperties } from 'vue';
 import { DragEventType, DragNodeType } from '../model/Mouse.ts';
-import { cursorAtContainerEdge, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts';
+import { cursorAtContainerEdge, cursorAtContainerEdgeType, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../common/dtdHelper.ts';
 import { DTD_MOUSE } from '../common/injectSymbol.ts'
 import { useKeyboard } from '../hooks/useKeyboard.ts';
 
@@ -74,16 +74,31 @@ function selectHandler() {
     emits('selected', mouse.selectedNodes[0]?.node?.props)
 }
 
+function draggingHandler(e: MouseEvent) {
+    const edgeType = cursorAtContainerEdgeType(podRef.value!, e)
+    if (edgeType === 'top') {
+        podRef.value!.scrollTop -= 10
+    } else if (edgeType === 'bottom') {
+        podRef.value!.scrollTop += 10
+    } else if (edgeType === 'left') {
+        podRef.value!.scrollLeft -= 10
+    } else if (edgeType === 'right') {
+        podRef.value!.scrollLeft += 10
+    }
+}
+
 onMounted(() => {
-    // TODO 优化
     if (podRef.value) {
         podRef.value.addEventListener('scroll', podScrollHandler)
     }
     mouse.on(DragEventType.Select, selectHandler)
+    // 拖拽中，如果拖拽至顶部或底部，左右边缘，自动滚动
+    mouse.on(DragEventType.Dragging, draggingHandler)
 })
 
 onBeforeUnmount(() => {
     mouse.off(DragEventType.Select, selectHandler)
+    mouse.off(DragEventType.Dragging, draggingHandler)
     if (podRef.value) {
         podRef.value.removeEventListener('scroll', podScrollHandler)
     }
