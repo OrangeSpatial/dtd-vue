@@ -90,3 +90,19 @@ export function sortMouseEvents(e1: MouseEvent, e2: MouseEvent) {
   if ((rect1.x - rect2.x) >= 0 && (rect1.y - rect2.y) >= 0) return 1
   return -1
 }
+
+/**
+ * 判断鼠标所在是否是容器的边缘，且返回边缘类型
+ * @param DOM 容器
+ * @param MouseEvent 鼠标事件
+ * @returns 边缘类型
+ * 
+ */
+export function cursorAtContainerEdgeType(container: HTMLElement, e: MouseEvent) {
+  const rect = container.getBoundingClientRect()
+  if (e.clientY - rect.top < edgeGap) return 'top'
+  if (rect.top + rect.height - e.clientY < edgeGap) return 'bottom'
+  if (e.clientX - rect.left < edgeGap) return 'left'
+  if (rect.left + rect.width - e.clientX < edgeGap) return 'right'
+  return ''
+}
