@@ -3,9 +3,7 @@ import { Mouse } from '../model/Mouse.ts'
 import { onBeforeUnmount, onMounted } from 'vue'
 
 export function useCursor(keyboard: Keyboard) {
-  const mouse = new Mouse()
-
-  mouse.keyboard = keyboard
+  const mouse = new Mouse(keyboard)
 
   onMounted(() => {
     document.addEventListener('mousedown', mouse.down)

@@ -41,18 +41,18 @@ function selectHandler(e: MouseEvent, targetNode?: DtdNode) {
             startTop: 0,
         })
         nextTick(() => {
-            updateSelection(selectNode.e, targetNode, Boolean(targetNode))
+            updateSelection(selectNode.e, targetNode)
         })
     })
 }
 
-function updateSelection(e: MouseEvent, targetNode?: DtdNode, isDragEnd = false) {
+function updateSelection(e?: MouseEvent, targetNode?: DtdNode) {
     if (!e) {
         resetSelectionRectStyle()
         return
     }
     const positionObj = getCursorPositionInDtdNode(e)
-    if (!mouse?.selectedNodes.length || !positionObj) {
+    if (!mouse?.selectedNodes.length) {
         resetSelectionRectStyle()
         return
     }
@@ -67,7 +67,7 @@ function updateSelection(e: MouseEvent, targetNode?: DtdNode, isDragEnd = false)
     // 节点对应的dom
     let selectedDoms: (Element | null)[]
     
-    if (isDragEnd) {
+    if (targetNode && positionObj) {
         // 拖拽
         // 选中拖拽节点
         const isContainerEdge = cursorAtContainerEdge(positionObj.rect, e)

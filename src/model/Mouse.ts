@@ -96,7 +96,8 @@ export class Mouse {
 
   keyboard: Keyboard | null = null
 
-  constructor() {
+  constructor(keyboard: Keyboard) {
+    this.keyboard = keyboard;
   }
 
   public setSelectedNodes(nodes: ISelectNode[], e: MouseEvent, targetNode?: DtdNode): void {
