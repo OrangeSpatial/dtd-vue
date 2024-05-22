@@ -51,9 +51,9 @@ const data1 = ref([
                 </DragToDrop>
             </div>
         </div>
-        <template #ghost="{ item }">
-            <div class="ghost-custom bg-blue">{{ item?.name }}</div>
-        </template>
+      <template #ghost="{ items }">
+        <div class="ghost-custom bg-blue">{{ items?.[0].name }}</div>
+      </template>
     </dtd-pod>
     <div class="title">渲染数据：</div>
     <div class="container">

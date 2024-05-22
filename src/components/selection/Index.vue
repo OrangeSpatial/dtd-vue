@@ -4,7 +4,14 @@ import { DTD_BASE_KEY, initStyle } from '../../common/presets';
 import { DragEventType, Mouse } from '../../model/Mouse';
 import { DTD_MOUSE } from '../../common/injectSymbol';
 import { DtdNode } from '../../model/DtdNode';
-import { cursorAtContainerEdge, getBoundingRects, getCursorPositionInDtdNode, getLayoutNodeInContainer } from '../../common/dtdHelper';
+import {
+  cursorAtContainerEdge,
+  getBoundingRects,
+  getCursorPositionInDtdNode,
+  getElementByDtdId,
+  getLayoutNodeInContainer
+} from '../../common/dtdHelper';
+import {useCursor} from "../../hooks/useCursor.ts";
 
 
 defineOptions({
@@ -26,13 +33,10 @@ const selectNodes = ref<{
     startTop: number;
 }[]>([])
 
-const mouse = inject<Mouse>(DTD_MOUSE)
-if (!mouse) {
-    throw new Error('DtdAuxTool: mouse is required')
-}
+const { mouse } = useCursor()
 function selectHandler(e: MouseEvent, targetNode?: DtdNode) {
     selectNodes.value = []
-    mouse?.selectedNodes.forEach(selectNode => {
+    mouse.selectedNodes.forEach(selectNode => {
         selectNodes.value.push({
             selectNode: selectNode.node,
             selectionStyle: initStyle,
@@ -52,7 +56,7 @@ function updateSelection(e?: MouseEvent, targetNode?: DtdNode) {
         return
     }
     const positionObj = getCursorPositionInDtdNode(e)
-    if (!mouse?.selectedNodes.length) {
+    if (!mouse.selectedNodes.length) {
         resetSelectionRectStyle()
         return
     }
@@ -76,19 +80,19 @@ function updateSelection(e?: MouseEvent, targetNode?: DtdNode) {
         if (targetNode?.droppable && !isContainerEdge) {
             // 在可放置的容器内
             selectedDoms = selectNodes.value.map(item => {
-                return positionObj.targetEl.querySelector(`[${DTD_BASE_KEY}="${item.selectNode.dragId}"]`)
+              return getElementByDtdId(item.selectNode.dragId, positionObj.targetEl)
             })
         } else {
             // 如果不是放入容器，计算所有拖拽节点父级dom的最大矩形
-            const parentDtdDom = positionObj.targetEl.parentElement?.closest(`[${DTD_BASE_KEY}]`)
+            const parentDtdDom = positionObj.targetEl.parentElement?.closest(`[${DTD_BASE_KEY}]`) as HTMLElement
             if (!parentDtdDom) return
             selectedDoms = selectNodes.value.map(item => {
-                return parentDtdDom.querySelector(`[${DTD_BASE_KEY}="${item.selectNode.dragId}"]`)
+              return getElementByDtdId(item.selectNode.dragId, parentDtdDom)
             })
         }
     } else {
         selectedDoms = selectNodes.value.map(item => {
-            return container.querySelector(`[${DTD_BASE_KEY}="${item.selectNode.dragId}"]`)
+          return getElementByDtdId(item.selectNode.dragId, container)
         })
     }
     // 计算所有拖拽节点对应的dom的最大矩形
