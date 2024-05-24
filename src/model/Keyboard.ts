@@ -21,6 +21,7 @@ export class Keyboard {
 
   public keydown = (e: KeyboardEvent) => {
     this.pressKeys.push(e.key);
+    console.log(this.pressKeys)
     document.addEventListener('keyup', this.keyup);
   }
   public keyup = (e: KeyboardEvent) => {

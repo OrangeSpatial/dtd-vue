@@ -1,12 +1,11 @@
-import { Keyboard } from '../model/Keyboard.ts'
 import { Mouse } from '../model/Mouse.ts'
 import { onBeforeUnmount, onMounted } from 'vue'
+import {Keyboard} from "../model/Keyboard.ts";
 
-export function useCursor(keyboard: Keyboard) {
-  const mouse = new Mouse()
+let mouse = new Mouse()
 
-  mouse.keyboard = keyboard
-
+export function initCursor(keyboard: Keyboard) {
+  mouse = new Mouse(keyboard)
   onMounted(() => {
     document.addEventListener('mousedown', mouse.down)
   })
@@ -14,7 +13,12 @@ export function useCursor(keyboard: Keyboard) {
     document.removeEventListener('mousedown', mouse.down)
   })
 
+  return mouse
+}
+
+export function useCursor() {
   return {
     mouse,
+    selectedNodes: mouse.selectedNodes
   }
 }

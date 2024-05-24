@@ -18,8 +18,8 @@ const data = ref([
           <div class="dtd-item">{{ item.props?.name }}</div>
         </template>
       </DragToDrop>
-      <template #ghost="{ item }">
-        <div class="ghost-custom">{{ item?.name }}</div>
+      <template #ghost="{ items }">
+        <div class="ghost-custom">{{ items?.[0].name }}</div>
       </template>
     </dtd-pod>
   </div>

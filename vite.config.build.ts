@@ -11,7 +11,8 @@ const importCssPlugin = (): PluginOption => ({
     for (const chunk in bundle) {
       // 找到style.css文件, 导入index.mjs顶部
       if(chunk === 'index.mjs') {
-        bundle[chunk].code = `import './style.css';\n${bundle[chunk].code}`
+        const file = bundle[chunk] as { code: string }
+        file.code = `import './style.css';\n${file.code}`
       }
     }
   }
@@ -23,7 +24,7 @@ export default defineConfig({
     lib: {
       entry: "src/index.ts",
       name: "core",
-      formats: ["es", "umd", "cjs"],
+      // formats: ["es", "umd", "cjs"],
       fileName: (format) => `core.${format}.js`,
     },
     rollupOptions: {
