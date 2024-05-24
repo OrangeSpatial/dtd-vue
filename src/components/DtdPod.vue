@@ -83,6 +83,19 @@ function dragStartHandler() {
   carryNode.value = mouse.dataTransfer
 }
 
+function draggingHandler(e: MouseEvent) {
+    const edgeType = cursorAtContainerEdgeType(podRef.value!, e)
+    if (edgeType === 'top') {
+        podRef.value!.scrollTop -= 10
+    } else if (edgeType === 'bottom') {
+        podRef.value!.scrollTop += 10
+    } else if (edgeType === 'left') {
+        podRef.value!.scrollLeft -= 10
+    } else if (edgeType === 'right') {
+        podRef.value!.scrollLeft += 10
+    }
+}
+
 onMounted(() => {
   if (podRef.value) {
     mouse.setPodElement(podRef.value)
@@ -107,7 +120,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="podRef" class="dtd-pod">
+<div ref="podRef" class="dtd-pod">
     <slot></slot>
     <dtd-aux-tool :scrollPosition/>
     <dtd-ghost @mounted="ghostMounted">

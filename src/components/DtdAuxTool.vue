@@ -25,6 +25,11 @@ const auxToolRef = ref<HTMLElement>()
 const auxToolStyle = ref<CSSProperties>({
     transform: 'translate(0, 0)',
 })
+watch(() => props.scrollPosition, (val) => {
+  auxToolStyle.value = {
+    transform: `translate(${val?.scrollLeft || 0}px, ${val?.scrollTop || 0}px)`
+  }
+})
 
 watch(() => props.scrollPosition, (val) => {
   auxToolStyle.value = {
