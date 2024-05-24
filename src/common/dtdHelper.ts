@@ -8,6 +8,10 @@ export function getClosestDtdNode(e: MouseEvent) {
   return target.closest(`[${DTD_BASE_KEY}]`) as HTMLElement
 }
 
+export function getElementByDtdId(id: string, container: HTMLElement = document.body) {
+  return container.querySelector(`[${DTD_BASE_KEY}="${id}"]`) as HTMLElement
+}
+
 export function getCursorPositionInDtdNode(e: MouseEvent) {
   const target = getClosestDtdNode(e)
   if (!target) return null

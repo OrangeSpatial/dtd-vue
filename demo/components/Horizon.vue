@@ -42,8 +42,8 @@ const data = ref([
           </template>
         </DragToDrop>
       </div>
-      <template #ghost="{ item }">
-        <div class="ghost-custom">{{ item?.name }}</div>
+      <template #ghost="{ items }">
+        <div class="ghost-custom">{{ items?.[0].name }}</div>
       </template>
     </dtd-pod>
   </div>

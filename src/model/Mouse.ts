@@ -85,6 +85,8 @@ export class Mouse {
 
   ghostElement: HTMLElement | null = null
 
+  podElement: HTMLElement | null = null
+
   dataTransfer: DtdNode[] = []
 
   startEvent: MouseEvent = new MouseEvent('')
@@ -96,7 +98,8 @@ export class Mouse {
 
   keyboard: Keyboard | null = null
 
-  constructor() {
+  constructor(keyboard?: Keyboard) {
+    this.keyboard = keyboard || null;
   }
 
   public setSelectedNodes(nodes: ISelectNode[], e: MouseEvent, targetNode?: DtdNode): void {
@@ -112,6 +115,10 @@ export class Mouse {
   public setGhostElement(ghostElement: HTMLElement | null): void {
     this.ghostElement && this.ghostElement.remove();
     this.ghostElement = ghostElement;
+  }
+
+  public setPodElement(podElement: HTMLElement | null): void {
+    this.podElement = podElement;
   }
 
   public setDragStatus(status: CursorStatus | string): void {
@@ -154,7 +161,7 @@ export class Mouse {
     }
   }
 
-  isValideClick(e: MouseEvent) {
+  isValidClick(e: MouseEvent) {
     const distance = Math.sqrt(
       Math.pow(e.pageX - this.startEvent.pageX, 2) +
       Math.pow(e.pageY - this.startEvent.pageY, 2)
@@ -267,7 +274,7 @@ export class Mouse {
   }
 
   public up = (e: MouseEvent) => {
-    if(this.isValideClick(e)) {
+    if(this.isValidClick(e)) {
       const dragId = getClosestDtdNode(e)?.getAttribute(DTD_BASE_KEY) as string;
       const targetNode = getNode(dragId);
       if (targetNode && targetNode.root.dragType !== DragNodeType.COPY) {

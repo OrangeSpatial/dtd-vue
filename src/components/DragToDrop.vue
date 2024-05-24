@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { inject, onBeforeUnmount, ref } from 'vue'
+import {nextTick, onBeforeUnmount, onMounted, ref} from 'vue'
 import DtdRecursion from './DtdRecursion.vue'
 import DtdItem from './DtdItem.vue'
 import { DtdNode, getNode } from '../model/DtdNode'
-import { DTD_MOUSE } from '../common/injectSymbol'
 import { DragEventType, DragNodeType, ISelectNode, Mouse } from '../model/Mouse'
+import {useCursor} from "../hooks/useCursor.ts";
 
 defineOptions({
   name: 'DragToDrop',
@@ -22,31 +22,35 @@ const emits = defineEmits(['change'])
 
 const dtdData = ref(new DtdNode({ children: [] }))
 
-const mouse = inject<Mouse>(DTD_MOUSE)
-mouse?.on(DragEventType.DragEnd, (e: MouseEvent, targetNode?: DtdNode) => {
+const { mouse } = useCursor()
+
+const dragEndHandle = (e: MouseEvent, targetNode?: DtdNode) => {
   if (!mouse.dataTransfer.length) return
   if (targetNode && mouse.dataTransfer.find(node => node.isParentOf(targetNode))) return
-  emits('change', getData())
-  dtdData.value = dtdData.value.clone()
+  nextTick(() => {
+    emits('change', getData())
+    dtdData.value = dtdData.value.clone()
+    console.log('dragEndHandle', dtdData.value, getData())
+  })
   mouse.setSelectedNodes(
     mouse.dataTransfer.map(node => ({ node: getNode(node.dragId), e } as ISelectNode)),
     e,
     targetNode
   );
-})
-
+}
 function getData() {
   return DtdNode.toList(dtdData.value)
 }
 
+onMounted(() => {
+  mouse.on(DragEventType.DragEnd, dragEndHandle)
+})
 onBeforeUnmount(() => {
+  mouse.off(DragEventType.DragEnd, dragEndHandle)
   DtdNode.clearCacheAll()
 })
 
 function init() {
-  if (!mouse) {
-    throw new Error('DragToDrop: mouse is required')
-  }
   const root = DtdNode.fromList(props.data || [])
   root.dragType = props.dragType
   dtdData.value = root
