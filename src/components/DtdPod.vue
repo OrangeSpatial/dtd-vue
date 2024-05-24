@@ -66,19 +66,6 @@ function selectHandler() {
   emits('selected', mouse.selectedNodes[0]?.node?.props)
 }
 
-function draggingHandler(e: MouseEvent) {
-  const edgeType = cursorAtContainerEdgeType(podRef.value!, e)
-  if (edgeType === 'top') {
-    podRef.value!.scrollTop -= 10
-  } else if (edgeType === 'bottom') {
-    podRef.value!.scrollTop += 10
-  } else if (edgeType === 'left') {
-    podRef.value!.scrollLeft -= 10
-  } else if (edgeType === 'right') {
-    podRef.value!.scrollLeft += 10
-  }
-}
-
 function dragStartHandler() {
   carryNode.value = mouse.dataTransfer
 }
